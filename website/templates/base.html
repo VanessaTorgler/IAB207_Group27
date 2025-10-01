@@ -13,9 +13,7 @@
 </head>
 
 <body>
-  {% block breadcrumbs %}
 
-  {% endblock %}
   <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded"
     href="#main">Skip to content</a>
   <!-- Navbar -->
@@ -23,7 +21,7 @@
     <!-- Your navbar should go here -->
     <div class="container">
       <!-- Brand -->
-      <a class="navbar-brand fw-bold text-primary" href="index.html">
+      <a class="navbar-brand fw-bold text-primary" href="{{ url_for('main.index') }}">
         <img class="bondra-logo" src="../static/img/bondra-logo.png" alt="Bondra logo"> Bondra
       </a>
 
@@ -36,17 +34,20 @@
       <div id="nav" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="index.html" aria-current="page">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('main.index') }}"
+              aria-current="page">
               <i class="bi bi-house-door-fill me-1"></i> Home
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'create-update' %}active{% endif %}" href="create-update.html">
+            <a class="nav-link {% if active_page == 'create-update' %}active{% endif %}"
+              href="{{ url_for('main.createUpdate') }}">
               <i class="bi bi-plus-circle me-1"></i> Create Event
             </a>
           </li>
-          <li class="nav-item {% if active_page == 'bookinghistory' %}active{% endif %}" href="history.html">
-            <a class="nav-link" href="history.html">
+          <li class="nav-item">
+            <a class="nav-link  {% if active_page == 'bookinghistory' %}active{% endif %}"
+              href="{{ url_for('main.bookingHistory') }}">
               <i class="bi bi-clock-history me-1"></i> Booking History
             </a>
           </li>
@@ -61,14 +62,15 @@
               <span class="fw-semibold">Brad</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-person-circle me-2"></i>
+              <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-person-circle me-2"></i>
                   Profile</a></li>
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-gear me-2"></i>
+              <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-gear me-2"></i>
                   Settings</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item text-danger" href="index.html"><i class="bi bi-box-arrow-right me-2"></i>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('main.index') }}"><i
+                    class="bi bi-box-arrow-right me-2"></i>
                   Logout</a></li>
             </ul>
           </li>
@@ -78,7 +80,9 @@
   </nav>
   <!-- Header -->
   <header class="py-4 border-bottom">
+    {% block breadcrumbs %}
 
+    {% endblock %}
     <!-- Code for using Flask flash -->
     <div class="container-fluid">
       {% with messages = get_flashed_messages() %}
@@ -121,10 +125,10 @@
         <div class="col-6 col-md-2 mb-4">
           <h6 class="fw-semibold">Company</h6>
           <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">About Us</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Our Team</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Careers</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Contact</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">About Us</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Our Team</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Careers</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Contact</a></li>
           </ul>
         </div>
 
@@ -132,9 +136,9 @@
         <div class="col-6 col-md-3 mb-4">
           <h6 class="fw-semibold">Policies</h6>
           <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">Privacy Policy</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Terms of Service</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Refund Policy</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Privacy Policy</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Terms of Service</a></li>
+            <li><a class="text-decoration-none text-muted" href="{{ url_for('main.index') }}">Refund Policy</a></li>
           </ul>
         </div>
 

@@ -8,7 +8,7 @@
 <div class="bg-light border-bottom">
   <nav class="container small py-2" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
       <li class="breadcrumb-item active" aria-current="page">Event Details</li>
     </ol>
   </nav>
@@ -80,7 +80,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a href="history.html" class="btn btn-primary">Confirm &amp; Go To Payment</a>
+        <a href="{{ url_for('main.bookingHistory') }}" class="btn btn-primary">Confirm &amp; Go To Payment</a>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>

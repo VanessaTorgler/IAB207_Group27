@@ -10,9 +10,9 @@ def event():
     return render_template('event.html')
 
 @main_bp.route('/bookinghistory')
-def bookinghistory():
+def bookingHistory():
     return render_template('history.html', active_page='bookinghistory')
 
 @main_bp.route('/create-update')
-def createupdate():
+def createUpdate():
     return render_template('create-update.html', active_page='create-update')

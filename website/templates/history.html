@@ -8,7 +8,7 @@
 <div class="bg-light border-bottom">
   <nav class="container small py-2" aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
       <li class="breadcrumb-item active" aria-current="page">Booking History</li>
     </ol>
   </nav>
@@ -78,7 +78,7 @@
       <div class="card d-none" id="empty-state-cards">
         <div class="card-body text-center text-muted">
           <p class="mb-2">No bookings yet.</p>
-          <a class="btn btn-outline-primary btn-sm" href="index.html">Browse events</a>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Browse events</a>
         </div>
       </div>
 
@@ -107,7 +107,7 @@
                     <dd class="col-7"><span class="badge rounded-pill badge-open">Upcoming</span></dd>
                   </dl>
                   <div class="mt-auto d-flex gap-2">
-                    <a class="btn btn-outline-primary btn-sm" href="event.html">View event</a>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.event') }}">View event</a>
                     <button class="btn btn-outline-secondary btn-sm" type="button">Cancel</button>
                   </div>
                 </div>
@@ -139,7 +139,7 @@
                     <dd class="col-7"><span class="badge rounded-pill badge-inactive">Past</span></dd>
                   </dl>
                   <div class="mt-auto d-flex gap-2">
-                    <a class="btn btn-outline-secondary btn-sm" href="event.html">View event</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.event') }}">View event</a>
                   </div>
                 </div>
               </div>
@@ -155,7 +155,7 @@
       <div class="card d-none" id="empty-state-table">
         <div class="card-body text-center text-muted">
           <p class="mb-2">No bookings found.</p>
-          <a class="btn btn-outline-primary btn-sm" href="index.html">Browse events</a>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Browse events</a>
         </div>
       </div>
 
@@ -190,7 +190,7 @@
                 <td>2</td>
                 <td><span class="badge rounded-pill badge-open">Upcoming</span></td>
                 <td class="text-end">
-                  <a class="btn btn-sm btn-outline-primary" href="event.html">View</a>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.event') }}">View</a>
                 </td>
               </tr>
               <tr>
@@ -209,7 +209,7 @@
                 <td>1</td>
                 <td><span class="badge rounded-pill badge-inactive">Past</span></td>
                 <td class="text-end">
-                  <a class="btn btn-sm btn-outline-secondary" href="event.html">View</a>
+                  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.event') }}">View</a>
                 </td>
               </tr>
             </tbody>

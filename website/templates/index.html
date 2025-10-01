@@ -20,7 +20,7 @@
   </div>
 
   <!-- Desktop: Host an event shortcut -->
-  <a href="create-update.html" class="btn btn-primary d-none d-md-inline-flex">Host an Event</a>
+  <a href="{{ url_for('main.createUpdate') }}" class="btn btn-primary d-none d-md-inline-flex">Host an Event</a>
 </div>
 {% endblock %}
 
@@ -223,9 +223,10 @@
           <p class="card-text flex-grow-1">Real-world AI adoption and careers. Talks + table discussions.</p>
           <div class="d-flex justify-content-between align-items-center mt-auto">
             <div class="d-flex gap-2">
-              <a class="btn btn-primary" href="event.html" aria-label="View details for Founders’ Breakfast">View
+              <a class="btn btn-primary" href="{{ url_for('main.event') }}"
+                aria-label="View details for Founders’ Breakfast">View
                 details</a>
-              <a class="btn btn-outline-primary" href="event.html"
+              <a class="btn btn-outline-primary" href="{{ url_for('main.event') }}"
                 aria-label="Book tickets for Founders’ Breakfast">Book</a>
             </div>
             <span class="fw-semibold text-primary">$35</span>
