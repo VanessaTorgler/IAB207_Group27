@@ -1,96 +1,41 @@
 <!doctype html>
 <html lang="en">
+{% extends "base.html" %}
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {% block title %}
   <title>Bondra – Home</title>
+  {% endblock %}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link href="../static/style/main.css" rel="stylesheet">
 </head>
+
 <body>
-  <!-- Skip link -->
-  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded" href="#main">Skip to content</a>
+  {% block header %}
+  <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+      <h1 class="h3 mb-1">Discover Professional Networking Events</h1>
+      <p class="text-muted mb-0">Browse by category, filter by format, and check status at a glance.</p>
+    </div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-    <div class="container">
-      <!-- Brand -->
-      <a class="navbar-brand fw-bold text-primary" href="index.html">
-        <img class="bondra-logo" src="../static/img/bondra-logo.png" alt="Bondra logo"> Bondra
-      </a>
-
-      <!-- Toggler -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+    <!-- Mobile: Filters button (offcanvas) -->
+    <div class="d-flex justify-content-center">
+      <button class="btn btn-outline-primary d-md-none" type="button" style="min-width:300px;"
+        data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas" aria-controls="filtersOffcanvas"
+        aria-label="Open filters">
+        Filters
       </button>
-
-      <!-- Links -->
-      <div id="nav" class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-          <li class="nav-item">
-            <a class="nav-link active" href="index.html" aria-current="page">
-              <i class="bi bi-house-door-fill me-1"></i> Home
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="create-update.html">
-              <i class="bi bi-plus-circle me-1"></i> Create Event
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="history.html">
-              <i class="bi bi-clock-history me-1"></i> Booking History
-            </a>
-          </li>
-
-          <!-- Divider (desktop only) -->
-          <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
-
-          <!-- User Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="fw-semibold">Brad</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-gear me-2"></i> Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
     </div>
-  </nav>
 
-  <!-- Header -->
-  <header class="py-4 border-bottom">
-    <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-      <div>
-        <h1 class="h3 mb-1">Discover Professional Networking Events</h1>
-        <p class="text-muted mb-0">Browse by category, filter by format, and check status at a glance.</p>
-      </div>
+    <!-- Desktop: Host an event shortcut -->
+    <a href="create-update.html" class="btn btn-primary d-none d-md-inline-flex">Host an Event</a>
+  </div>
+  {% endblock %}
 
-      <!-- Mobile: Filters button (offcanvas) -->
-      <div class="d-flex justify-content-center">
-        <button
-          class="btn btn-outline-primary d-md-none"
-          type="button"
-          style="min-width:300px;"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#filtersOffcanvas"
-          aria-controls="filtersOffcanvas"
-          aria-label="Open filters">
-          Filters
-        </button>
-      </div>
-
-      <!-- Desktop: Host an event shortcut -->
-      <a href="create-update.html" class="btn btn-primary d-none d-md-inline-flex">Host an Event</a>
-    </div>
-  </header>
-
+  {% block content %}
   <!-- Offcanvas Filters (mobile) -->
   <div class="offcanvas offcanvas-end" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel">
     <div class="offcanvas-header">
@@ -133,13 +78,15 @@
             <div class="col-6">
               <div class="input-group">
                 <span class="input-group-text">$</span>
-                <input id="m-price-min" type="number" class="form-control" placeholder="Min" min="0" step="1" aria-label="Minimum price in dollars">
+                <input id="m-price-min" type="number" class="form-control" placeholder="Min" min="0" step="1"
+                  aria-label="Minimum price in dollars">
               </div>
             </div>
             <div class="col-6">
               <div class="input-group">
                 <span class="input-group-text">$</span>
-                <input id="m-price-max" type="number" class="form-control" placeholder="Max" min="0" step="1" aria-label="Maximum price in dollars">
+                <input id="m-price-max" type="number" class="form-control" placeholder="Max" min="0" step="1"
+                  aria-label="Maximum price in dollars">
               </div>
             </div>
           </div>
@@ -215,7 +162,8 @@
           <label class="form-label" for="price-min">Min price (AUD)</label>
           <div class="input-group">
             <span class="input-group-text">$</span>
-            <input id="price-min" type="number" class="form-control" placeholder="Min" min="0" step="1" aria-label="Minimum price in dollars">
+            <input id="price-min" type="number" class="form-control" placeholder="Min" min="0" step="1"
+              aria-label="Minimum price in dollars">
           </div>
         </div>
 
@@ -223,7 +171,8 @@
           <label class="form-label" for="price-max">Max price (AUD)</label>
           <div class="input-group">
             <span class="input-group-text">$</span>
-            <input id="price-max" type="number" class="form-control" placeholder="Max" min="0" step="1" aria-label="Maximum price in dollars">
+            <input id="price-max" type="number" class="form-control" placeholder="Max" min="0" step="1"
+              aria-label="Maximum price in dollars">
           </div>
         </div>
 
@@ -273,7 +222,8 @@
       <!-- Event 1 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/founders-breakfast.jpg" class="card-img-top" alt="Founders’ Breakfast: AI in Practice, cover image">
+          <img src="../static/img/founders-breakfast.jpg" class="card-img-top"
+            alt="Founders’ Breakfast: AI in Practice, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-open">Open</span>
@@ -284,8 +234,10 @@
             <p class="card-text flex-grow-1">Real-world AI adoption and careers. Talks + table discussions.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2">
-                <a class="btn btn-primary" href="event.html" aria-label="View details for Founders’ Breakfast">View details</a>
-                <a class="btn btn-outline-primary" href="event.html" aria-label="Book tickets for Founders’ Breakfast">Book</a>
+                <a class="btn btn-primary" href="event.html" aria-label="View details for Founders’ Breakfast">View
+                  details</a>
+                <a class="btn btn-outline-primary" href="event.html"
+                  aria-label="Book tickets for Founders’ Breakfast">Book</a>
               </div>
               <span class="fw-semibold text-primary">$35</span>
             </div>
@@ -296,19 +248,24 @@
       <!-- Event 2 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/women-tech.jpg" class="card-img-top" alt="Women in Tech: Leadership Panel, cover image">
+          <img src="../static/img/women-tech.jpg" class="card-img-top"
+            alt="Women in Tech: Leadership Panel, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-soldout">Sold Out</span>
               <span class="badge text-bg-light">Technology</span>
             </div>
             <h2 class="h5 card-title">Women in Tech: Leadership Panel</h2>
-            <p class="card-text text-muted mb-2">Thu, 18 Sept • 6:00–8:00 PM • Melbourne Convention Centre (In-person)</p>
-            <p class="card-text flex-grow-1">Female leaders in technology share career journeys, lessons, and strategies for breaking barriers.</p>
+            <p class="card-text text-muted mb-2">Thu, 18 Sept • 6:00–8:00 PM • Melbourne Convention Centre (In-person)
+            </p>
+            <p class="card-text flex-grow-1">Female leaders in technology share career journeys, lessons, and strategies
+              for breaking barriers.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2">
-                <button class="btn btn-secondary disabled" aria-disabled="true" aria-label="Booking unavailable: event sold out">Book</button>
-                <a class="btn btn-outline-secondary" href="event.html" aria-label="View details for Women in Tech: Leadership Panel">Details</a>
+                <button class="btn btn-secondary disabled" aria-disabled="true"
+                  aria-label="Booking unavailable: event sold out">Book</button>
+                <a class="btn btn-outline-secondary" href="event.html"
+                  aria-label="View details for Women in Tech: Leadership Panel">Details</a>
               </div>
               <span class="fw-semibold text-primary">$25</span>
             </div>
@@ -319,7 +276,8 @@
       <!-- Event 3 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/growth-panel.jpg" class="card-img-top" alt="Growth Panel: Content that Converts, cover image">
+          <img src="../static/img/growth-panel.jpg" class="card-img-top"
+            alt="Growth Panel: Content that Converts, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-open">Open</span>
@@ -330,8 +288,10 @@
             <p class="card-text flex-grow-1">CMOs share playbooks for audience growth.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <a class="btn btn-primary" href="event.html" aria-label="View details for Growth Panel: Content that Converts">View details</a>
-                <a class="btn btn-outline-primary" href="event.html" aria-label="Book tickets for Growth Panel: Content that Converts">Book</a>
+                <a class="btn btn-primary" href="event.html"
+                  aria-label="View details for Growth Panel: Content that Converts">View details</a>
+                <a class="btn btn-outline-primary" href="event.html"
+                  aria-label="Book tickets for Growth Panel: Content that Converts">Book</a>
               </div>
               <span class="fw-semibold text-primary">FREE</span>
             </div>
@@ -342,7 +302,8 @@
       <!-- Event 4 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/public-speaking.jpg" class="card-img-top" alt="Workshop: Beginner Public Speaking, cover image">
+          <img src="../static/img/public-speaking.jpg" class="card-img-top"
+            alt="Workshop: Beginner Public Speaking, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-cancelled">Cancelled</span>
@@ -353,8 +314,10 @@
             <p class="card-text flex-grow-1">Structure, delivery, and confidence with practice.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <button class="btn btn-secondary disabled" aria-disabled="true" aria-label="Booking unavailable: event cancelled">Book</button>
-                <a class="btn btn-outline-secondary" href="event.html" aria-label="View details for Beginner Public Speaking workshop">Details</a>
+                <button class="btn btn-secondary disabled" aria-disabled="true"
+                  aria-label="Booking unavailable: event cancelled">Book</button>
+                <a class="btn btn-outline-secondary" href="event.html"
+                  aria-label="View details for Beginner Public Speaking workshop">Details</a>
               </div>
               <span class="fw-semibold text-primary">$5</span>
             </div>
@@ -365,7 +328,8 @@
       <!-- Event 5 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/business-mixer.jpg" class="card-img-top" alt="Sustainable Business Mixer, cover image">
+          <img src="../static/img/business-mixer.jpg" class="card-img-top"
+            alt="Sustainable Business Mixer, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-open">Open</span>
@@ -373,11 +337,14 @@
             </div>
             <h2 class="h5 card-title">Sustainable Business Mixer</h2>
             <p class="card-text text-muted mb-2">Wed, 24 Sept • 5:30–7:30 PM • Online (Wellington, NZ)</p>
-            <p class="card-text flex-grow-1">Networking with professionals in renewable energy, waste management, and eco-friendly startups.</p>
+            <p class="card-text flex-grow-1">Networking with professionals in renewable energy, waste management, and
+              eco-friendly startups.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <a class="btn btn-primary" href="event.html" aria-label="View details for Sustainable Business Mixer">View details</a>
-                <a class="btn btn-outline-primary" href="event.html" aria-label="Book tickets for Sustainable Business Mixer">Book</a>
+                <a class="btn btn-primary" href="event.html"
+                  aria-label="View details for Sustainable Business Mixer">View details</a>
+                <a class="btn btn-outline-primary" href="event.html"
+                  aria-label="Book tickets for Sustainable Business Mixer">Book</a>
               </div>
               <span class="fw-semibold text-primary">$25</span>
             </div>
@@ -399,7 +366,8 @@
             <p class="card-text flex-grow-1">Peer networking for analysts and planners.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <a class="btn btn-outline-secondary" href="event.html" aria-label="View details for After-Work Finance Meetup">Details</a>
+                <a class="btn btn-outline-secondary" href="event.html"
+                  aria-label="View details for After-Work Finance Meetup">Details</a>
               </div>
               <span class="fw-semibold text-primary">$40</span>
             </div>
@@ -418,11 +386,14 @@
             </div>
             <h2 class="h5 card-title">Remote Work Networking Café</h2>
             <p class="card-text text-muted mb-2">Tue, 14 Oct • 12:00–1:00 PM • Online (Singapore)</p>
-            <p class="card-text flex-grow-1">Casual lunchtime networking in a virtual café. Share tips, meet peers, and explore collaboration.</p>
+            <p class="card-text flex-grow-1">Casual lunchtime networking in a virtual café. Share tips, meet peers, and
+              explore collaboration.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <a class="btn btn-primary" href="event.html" aria-label="View details for Remote Work Networking Café">View details</a>
-                <a class="btn btn-outline-primary" href="event.html" aria-label="Book tickets for Remote Work Networking Café">Book</a>
+                <a class="btn btn-primary" href="event.html"
+                  aria-label="View details for Remote Work Networking Café">View details</a>
+                <a class="btn btn-outline-primary" href="event.html"
+                  aria-label="Book tickets for Remote Work Networking Café">Book</a>
               </div>
               <span class="fw-semibold text-primary">FREE</span>
             </div>
@@ -433,7 +404,8 @@
       <!-- Event 8 -->
       <div class="col">
         <article class="card h-100">
-          <img src="../static/img/social-night.jpg" class="card-img-top" alt="Young Professionals Social Night, cover image">
+          <img src="../static/img/social-night.jpg" class="card-img-top"
+            alt="Young Professionals Social Night, cover image">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="badge rounded-pill badge-open">Open</span>
@@ -441,11 +413,14 @@
             </div>
             <h2 class="h5 card-title">Young Professionals Social Night</h2>
             <p class="card-text text-muted mb-2">Sat, 25 Oct • 7:00–11:00 PM • The Aviary Rooftop, Perth (In-person)</p>
-            <p class="card-text flex-grow-1">Relaxed evening with live music, canapés, and networking across industries.</p>
+            <p class="card-text flex-grow-1">Relaxed evening with live music, canapés, and networking across industries.
+            </p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <a class="btn btn-primary" href="event.html" aria-label="View details for Young Professionals Social Night">View details</a>
-                <a class="btn btn-outline-primary" href="event.html" aria-label="Book tickets for Young Professionals Social Night">Book</a>
+                <a class="btn btn-primary" href="event.html"
+                  aria-label="View details for Young Professionals Social Night">View details</a>
+                <a class="btn btn-outline-primary" href="event.html"
+                  aria-label="Book tickets for Young Professionals Social Night">Book</a>
               </div>
               <span class="fw-semibold text-primary">$50</span>
             </div>
@@ -464,11 +439,14 @@
             </div>
             <h2 class="h5 card-title">Startups & Pitch Night</h2>
             <p class="card-text text-muted mb-2">Fri, 3 Oct • 6:00–9:00 PM • The Precinct, Brisbane (In-person)</p>
-            <p class="card-text flex-grow-1">Early-stage founders pitch ideas to mentors and investors. Includes networking and refreshments.</p>
+            <p class="card-text flex-grow-1">Early-stage founders pitch ideas to mentors and investors. Includes
+              networking and refreshments.</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
               <div class="d-flex gap-2 mt-auto">
-                <button class="btn btn-secondary disabled" aria-disabled="true" aria-label="Booking unavailable: event sold out">Book</button>
-                <a class="btn btn-outline-secondary" href="event.html" aria-label="View details for Growth Panel">Details</a>
+                <button class="btn btn-secondary disabled" aria-disabled="true"
+                  aria-label="Booking unavailable: event sold out">Book</button>
+                <a class="btn btn-outline-secondary" href="event.html"
+                  aria-label="View details for Growth Panel">Details</a>
               </div>
               <span class="fw-semibold text-primary">$80</span>
             </div>
@@ -489,6 +467,8 @@
       </ul>
     </nav>
   </main>
+  {% endblock %}
+
 
   <footer class="bg-light border-top py-5 mt-5">
     <div class="container">
@@ -543,4 +523,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
