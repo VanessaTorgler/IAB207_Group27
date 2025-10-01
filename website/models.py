@@ -9,11 +9,13 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users' # good practice to specify table name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), index=True, unique=True, nullable=False)
-    emailid = db.Column(db.String(254), index=True, nullable=False, unique=True)
-    mobile = db.Column(db.String(32), index=True, nullable=False)
+    email = db.Column(db.String(254), index=True, nullable=False, unique=True)
+    mobile = db.Column(db.String(32), index=True)
 	# password should never stored in the DB, an encrypted password is stored
 	# the storage should be at least 255 chars long, depending on your hashing algorithm
     password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     # relation to call user.comments and comment.created_by
     comments = db.relationship('Comment', backref='user')
     
@@ -84,7 +86,7 @@ class TicketType(db.Model):
 
 class Booking(db.Model):
     __tablename__ = 'bookings'
-    booking_id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.String(24), primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     ticket_type = db.Column(db.Integer, db.ForeignKey('ticket_types.id'))
@@ -97,4 +99,58 @@ class Booking(db.Model):
     
     # string print method
     def __repr__(self):
-        return f"Order: {self.id} for Event: {self.event_id} by User: {self.user_id}"
+        return f"Order: {self.booking_id}"
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.booking_id'))
+    provider= db.Column(db.String(20))
+    method_brand= db.Column(db.String(20))
+    method_last4= db.Column(db.String(4))
+    amount = db.Column(db.Numeric(10,2))
+    currency= db.Column(db.CHAR(3))
+    status= db.Column(db.String(12))
+    provider_charge_id= db.Column(db.String(80))
+    authorised_at = db.Column(db.DateTime)
+    captured_at = db.Column(db.DateTime)
+    refunded_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    
+    # string print method
+    def __repr__(self):
+        return f"Payment: {self.id}"
+    
+class event_images(db.Model):
+    __tablename__ = 'event_images'
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id')) #add the unique, or nah?
+    url = db.Column(db.String(255))
+    alt_text = db.Column(db.String(160))
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    
+    # string print method
+    def __repr__(self):
+        return f"Image: {self.url}"
+    
+class event_tags(db.Model):
+    __tablename__ = 'event_tags'
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'))
+    
+    # string print method
+    def __repr__(self):
+        return f"Tag: {self.tag_id}"
+    
+class tags(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(60), unique=True)
+    slug = db.Column(db.String(60), unique=True)
+    
+    # string print method
+    def __repr__(self):
+        return f"Tag: {self.name}"
+    
