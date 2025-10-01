@@ -1,262 +1,198 @@
-<!doctype html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}
+<title>Bondra – Event Details</title>
+{% endblock %}
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bondra – Event Details</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link href="../static/style/main.css" rel="stylesheet">
-</head>
+{% block breadcrumbs %}
+<!-- Breadcrumbs -->
+<div class="bg-light border-bottom">
+  <nav class="container small py-2" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Event Details</li>
+    </ol>
+  </nav>
+</div>
+{% endblock %}
 
-<body>
-  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded"
-    href="#main">Skip to content</a>
+{% block header %}
+<!-- Hero / Cover -->
+<header class="border-bottom">
+  <div class="container">
+    <div class="row g-4 align-items-center py-4">
+      <div class="col-12 col-lg-7">
+        <img src="../static/img/founders-breakfast.jpg" class="img-fluid rounded"
+          alt="Cover image for Founders’ Breakfast: AI in Practice">
+      </div>
+      <div class="col-12 col-lg-5">
+        <span class="badge rounded-pill badge-open mb-2">Open</span>
+        <h1 class="h3 mb-2">Founders’ Breakfast: AI in Practice</h1>
+        <p class="text-muted mb-3">Hosted by <strong>Brisbane Startups Collective</strong></p>
 
-  <!-- Breadcrumbs -->
-  <div class="bg-light border-bottom">
-    <nav class="container small py-2" aria-label="breadcrumb">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Event Details</li>
-      </ol>
-    </nav>
-  </div>
+        <dl class="row small mb-3">
+          <dt class="col-4 col-sm-3">Date</dt>
+          <dd class="col-8 col-sm-9">Fri, 19 Sep 2025</dd>
+          <dt class="col-4 col-sm-3">Time</dt>
+          <dd class="col-8 col-sm-9">6:30–9:30 PM AEST</dd>
+          <dt class="col-4 col-sm-3">Format</dt>
+          <dd class="col-8 col-sm-9">In-person • South Brisbane</dd>
+          <dt class="col-4 col-sm-3">Category</dt>
+          <dd class="col-8 col-sm-9">Tech &amp; AI</dd>
+          <dt class="col-4 col-sm-3">Capacity</dt>
+          <dd class="col-8 col-sm-9">500 seats • 78 remaining</dd>
+          <dt class="col-4 col-sm-3">Price</dt>
+          <dd class="col-8 col-sm-9">$35</dd>
+        </dl>
 
-  <!-- Hero / Cover -->
-  <header class="border-bottom">
-    <div class="container">
-      <div class="row g-4 align-items-center py-4">
-        <div class="col-12 col-lg-7">
-          <img src="../static/img/founders-breakfast.jpg" class="img-fluid rounded"
-            alt="Cover image for Founders’ Breakfast: AI in Practice">
+        <p class="mb-3">
+          Lightning talks from founders implementing AI now, with a light dinner in between.
+          Bring questions—this session is practical and conversational.
+        </p>
+
+        <!-- Booking Path B: Modal confirmation -->
+        <div class="mt-2">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmBookingModal"
+            aria-label="Open booking confirmation modal">
+            Book Now
+          </button>
         </div>
-        <div class="col-12 col-lg-5">
-          <span class="badge rounded-pill badge-open mb-2">Open</span>
-          <h1 class="h3 mb-2">Founders’ Breakfast: AI in Practice</h1>
-          <p class="text-muted mb-3">Hosted by <strong>Brisbane Startups Collective</strong></p>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
 
-          <dl class="row small mb-3">
-            <dt class="col-4 col-sm-3">Date</dt>
-            <dd class="col-8 col-sm-9">Fri, 19 Sep 2025</dd>
-            <dt class="col-4 col-sm-3">Time</dt>
-            <dd class="col-8 col-sm-9">6:30–9:30 PM AEST</dd>
-            <dt class="col-4 col-sm-3">Format</dt>
-            <dd class="col-8 col-sm-9">In-person • South Brisbane</dd>
-            <dt class="col-4 col-sm-3">Category</dt>
-            <dd class="col-8 col-sm-9">Tech &amp; AI</dd>
-            <dt class="col-4 col-sm-3">Capacity</dt>
-            <dd class="col-8 col-sm-9">500 seats • 78 remaining</dd>
-            <dt class="col-4 col-sm-3">Price</dt>
-            <dd class="col-8 col-sm-9">$35</dd>
-          </dl>
+{% block content %}
+<!-- Booking Confirmation Modal -->
+<div class="modal fade" id="confirmBookingModal" tabindex="-1" aria-labelledby="confirmBookingLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="confirmBookingLabel">Confirm your booking</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
+      </div>
+      <div class="modal-body small">
+        <p class="mb-2">Event: <strong>Founders’ Breakfast: AI in Practice</strong></p>
+        <p class="mb-2">Date/Time: Fri, 19 Sep 2025 • 6:30–9:30 PM</p>
+        <div class="mb-3">
+          <label for="modalTicketQty" class="form-label">Tickets</label>
+          <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="history.html" class="btn btn-primary">Confirm &amp; Go To Payment</a>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Details & Comments -->
+<main id="main" class="container py-4">
+  <div class="row g-4">
+    <!-- Left column: details + comments -->
+    <section class="col-12 col-lg-8">
+      <div class="card">
+        <div class="card-header fw-semibold">About this event</div>
+        <div class="card-body">
           <p class="mb-3">
-            Lightning talks from founders implementing AI now, with a light dinner in between.
-            Bring questions—this session is practical and conversational.
+            We’ll unpack real case studies (workflow automation, customer support, analytics)
+            and discuss pathways into AI-adjacent roles. Light dinner provided.
           </p>
-
-          <!-- Booking Path B: Modal confirmation -->
-          <div class="mt-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmBookingModal"
-              aria-label="Open booking confirmation modal">
-              Book Now
-            </button>
-          </div>
+          <ul class="mb-0">
+            <li>Doors open: 6:15 PM</li>
+            <li>Talks: 6:30–7:50 PM, 8:10-9:30 PM</li>
+            <li>Intermission: 7:50–8:10 PM</li>
+          </ul>
         </div>
       </div>
-    </div>
-  </header>
 
-  <!-- Booking Confirmation Modal -->
-  <div class="modal fade" id="confirmBookingModal" tabindex="-1" aria-labelledby="confirmBookingLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="confirmBookingLabel">Confirm your booking</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
+      <!-- Comments list -->
+      <div class="card mt-4" aria-labelledby="commentsHeading">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <span id="commentsHeading" class="fw-semibold">Comments</span>
+          <span class="text-muted small"><strong>3</strong> comments • Visible to everyone</span>
         </div>
-        <div class="modal-body small">
-          <p class="mb-2">Event: <strong>Founders’ Breakfast: AI in Practice</strong></p>
-          <p class="mb-2">Date/Time: Fri, 19 Sep 2025 • 6:30–9:30 PM</p>
+        <div class="card-body">
+          <article class="d-flex gap-3 mb-3">
+            <img class="rounded-circle comment-avatar" src="../static/img/aisha.jpg" alt="Aisha avatar" width="40"
+              height="40">
+            <div>
+              <div class="fw-semibold">Aisha</div>
+              <div class="text-muted small">Posted 02 Sep 2025</div>
+              <p class="mb-0">Already got my tickets, can't wait 😊 Will there be parking on-site?</p>
+            </div>
+          </article>
+          <article class="d-flex gap-3 mb-3">
+            <img class="rounded-circle comment-avatar" src="../static/img/dev.jpg" alt="Dev avatar" width="40"
+              height="40">
+            <div>
+              <div class="fw-semibold">Dev</div>
+              <div class="text-muted small">Posted 02 Sep 2025</div>
+              <p class="mb-0">Any dietary options for the light dinner?</p>
+            </div>
+          </article>
+          <article class="d-flex gap-3">
+            <img class="rounded-circle comment-avatar" src="../static/img/mia.jpg" alt="Mia avatar" width="40"
+              height="40">
+            <div>
+              <div class="fw-semibold">Mia (Host)</div>
+              <div class="text-muted small">Posted 03 Sep 2025</div>
+              <p class="mb-0">Yes—parking under the convention centre; veg &amp; GF options included.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- Comment form -->
+      <form class="card mt-3" aria-label="Post a comment">
+        <div class="card-header fw-semibold">Post a comment</div>
+        <div class="card-body">
           <div class="mb-3">
-            <label for="modalTicketQty" class="form-label">Tickets</label>
-            <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">
+            <label for="commentText" class="form-label">Your comment</label>
+            <textarea id="commentText" class="form-control" rows="3" placeholder="Ask a question or share thoughts…"
+              required></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="reset" class="btn btn-outline-secondary">Clear</button>
+            <button type="button" class="btn btn-primary">Submit</button>
           </div>
         </div>
-        <div class="modal-footer">
-          <a href="history.html" class="btn btn-primary">Confirm &amp; Go To Payment</a>
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+      </form>
+    </section>
+
+    <!-- Right column -->
+    <aside class="col-12 col-lg-4">
+      <!-- Quick facts -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Quick facts</div>
+        <div class="card-body small">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><strong>Status:</strong> <span class="badge rounded-pill badge-open">Open</span></li>
+            <li class="mb-2"><strong>Remaining seats:</strong> 12</li>
+            <li class="mb-2"><strong>Dress code:</strong> Casual</li>
+            <li class="mb-2"><strong>Accessibility:</strong> Wheelchair accessible</li>
+            <li class="mb-2"><strong>Contact:</strong> support@foundersbreakfast.com</li>
+            <li class="mb-0"><strong>Share:</strong> <a href="#" class="link-primary">Copy link</a></li>
+          </ul>
         </div>
       </div>
-    </div>
+
+      <!-- Location map -->
+      <div class="card">
+        <div class="card-header fw-semibold">Location</div>
+        <div class="card-body p-0">
+          <div class="ratio ratio-1x1">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7079.536905550841!2d153.01840009999998!3d-27.4764671!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b915a0968742765%3A0x53b5b99532970ee3!2sBrisbane%20Convention%20%26%20Exhibition%20Centre!5e0!3m2!1sen!2sau!4v1757206100826!5m2!1sen!2sau"
+              style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+
   </div>
-
-  <!-- Details & Comments -->
-  <main id="main" class="container py-4">
-    <div class="row g-4">
-      <!-- Left column: details + comments -->
-      <section class="col-12 col-lg-8">
-        <div class="card">
-          <div class="card-header fw-semibold">About this event</div>
-          <div class="card-body">
-            <p class="mb-3">
-              We’ll unpack real case studies (workflow automation, customer support, analytics)
-              and discuss pathways into AI-adjacent roles. Light dinner provided.
-            </p>
-            <ul class="mb-0">
-              <li>Doors open: 6:15 PM</li>
-              <li>Talks: 6:30–7:50 PM, 8:10-9:30 PM</li>
-              <li>Intermission: 7:50–8:10 PM</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Comments list -->
-        <div class="card mt-4" aria-labelledby="commentsHeading">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <span id="commentsHeading" class="fw-semibold">Comments</span>
-            <span class="text-muted small"><strong>3</strong> comments • Visible to everyone</span>
-          </div>
-          <div class="card-body">
-            <article class="d-flex gap-3 mb-3">
-              <img class="rounded-circle comment-avatar" src="../static/img/aisha.jpg" alt="Aisha avatar" width="40"
-                height="40">
-              <div>
-                <div class="fw-semibold">Aisha</div>
-                <div class="text-muted small">Posted 02 Sep 2025</div>
-                <p class="mb-0">Already got my tickets, can't wait 😊 Will there be parking on-site?</p>
-              </div>
-            </article>
-            <article class="d-flex gap-3 mb-3">
-              <img class="rounded-circle comment-avatar" src="../static/img/dev.jpg" alt="Dev avatar" width="40"
-                height="40">
-              <div>
-                <div class="fw-semibold">Dev</div>
-                <div class="text-muted small">Posted 02 Sep 2025</div>
-                <p class="mb-0">Any dietary options for the light dinner?</p>
-              </div>
-            </article>
-            <article class="d-flex gap-3">
-              <img class="rounded-circle comment-avatar" src="../static/img/mia.jpg" alt="Mia avatar" width="40"
-                height="40">
-              <div>
-                <div class="fw-semibold">Mia (Host)</div>
-                <div class="text-muted small">Posted 03 Sep 2025</div>
-                <p class="mb-0">Yes—parking under the convention centre; veg &amp; GF options included.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <!-- Comment form -->
-        <form class="card mt-3" aria-label="Post a comment">
-          <div class="card-header fw-semibold">Post a comment</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="commentText" class="form-label">Your comment</label>
-              <textarea id="commentText" class="form-control" rows="3" placeholder="Ask a question or share thoughts…"
-                required></textarea>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-              <button type="reset" class="btn btn-outline-secondary">Clear</button>
-              <button type="button" class="btn btn-primary">Submit</button>
-            </div>
-          </div>
-        </form>
-      </section>
-
-      <!-- Right column -->
-      <aside class="col-12 col-lg-4">
-        <!-- Quick facts -->
-        <div class="card mb-4">
-          <div class="card-header fw-semibold">Quick facts</div>
-          <div class="card-body small">
-            <ul class="list-unstyled mb-0">
-              <li class="mb-2"><strong>Status:</strong> <span class="badge rounded-pill badge-open">Open</span></li>
-              <li class="mb-2"><strong>Remaining seats:</strong> 12</li>
-              <li class="mb-2"><strong>Dress code:</strong> Casual</li>
-              <li class="mb-2"><strong>Accessibility:</strong> Wheelchair accessible</li>
-              <li class="mb-2"><strong>Contact:</strong> support@foundersbreakfast.com</li>
-              <li class="mb-0"><strong>Share:</strong> <a href="#" class="link-primary">Copy link</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Location map -->
-        <div class="card">
-          <div class="card-header fw-semibold">Location</div>
-          <div class="card-body p-0">
-            <div class="ratio ratio-1x1">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7079.536905550841!2d153.01840009999998!3d-27.4764671!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b915a0968742765%3A0x53b5b99532970ee3!2sBrisbane%20Convention%20%26%20Exhibition%20Centre!5e0!3m2!1sen!2sau!4v1757206100826!5m2!1sen!2sau"
-                style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-              </iframe>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-
-    </div>
-  </main>
-
-  <footer class="bg-light border-top py-5 mt-5">
-    <div class="container">
-      <div class="row">
-        <!-- Brand / About -->
-        <div class="col-md-4 mb-4">
-          <div class="d-flex align-items-center mb-2">
-            <img src="../static/img/bondra-logo.png" alt="Bondra logo" class="bondra-logo me-2">
-            <h5 class="fw-bold text-primary mb-0">Bondra</h5>
-          </div>
-          <p class="small text-muted">
-            A simple networking platform to connect through events, mentorship, and industry discussions.
-          </p>
-          <p class="small mb-0 text-muted">© 2025 Bondra</p>
-        </div>
-
-        <!-- Quick Links -->
-        <div class="col-6 col-md-2 mb-4">
-          <h6 class="fw-semibold">Company</h6>
-          <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">About Us</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Our Team</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Careers</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Contact</a></li>
-          </ul>
-        </div>
-
-        <!-- Policies -->
-        <div class="col-6 col-md-3 mb-4">
-          <h6 class="fw-semibold">Policies</h6>
-          <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">Privacy Policy</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Terms of Service</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Refund Policy</a></li>
-          </ul>
-        </div>
-
-        <!-- Payment Methods -->
-        <div class="col-md-3 mb-4">
-          <h6 class="fw-semibold">Payment Methods</h6>
-          <div class="d-flex flex-wrap align-items-center gap-3">
-            <img class="payment-logo" src="../static/img/mastercard.svg" alt="Mastercard">
-            <img class="payment-logo" src="../static/img/visa.svg" alt="Visa">
-            <img class="payment-logo" src="../static/img/apple-pay.svg" alt="Apple Pay">
-            <img class="payment-logo" src="../static/img/google-pay.svg" alt="Google Pay">
-            <img class="payment-logo" src="../static/img/afterpay.svg" alt="Afterpay">
-          </div>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
-</html>
+</main>
+{% endblock %}
