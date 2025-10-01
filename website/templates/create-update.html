@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bondra – Create / Update Event</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link href="../static/style/main.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+      <!-- Brand -->
+      <a class="navbar-brand fw-bold text-primary" href="index.html">
+        <img class="bondra-logo" src="../static/img/bondra-logo.png" alt="Bondra logo"> Bondra
+      </a>
+
+      <!-- Toggler -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Links -->
+      <div id="nav" class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item">
+            <a class="nav-link active" href="index.html" aria-current="page">
+              <i class="bi bi-house-door-fill me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="create-update.html">
+              <i class="bi bi-plus-circle me-1"></i> Create Event
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="history.html">
+              <i class="bi bi-clock-history me-1"></i> Booking History
+            </a>
+          </li>
+
+          <!-- Divider (desktop only) -->
+          <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
+
+          <!-- User Dropdown -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle d-flex align-items-center justify-content-between w-100 w-lg-auto"
+              href="#"
+              id="userDropdown"
+              role="button"
+              data-bs-toggle="dropdown"
+              data-bs-display="static"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              <span class="d-flex align-items-center">
+                <span class="fw-semibold">Brad</span>
+              </span>
+              <!-- show caret on mobile only -->
+              <i class="bi bi-caret-down-fill ms-2 d-lg-none"></i>
+            </a>
+
+            <!-- right-aligned on lg+, full-width inline on mobile -->
+            <ul class="dropdown-menu dropdown-menu-lg-end mt-2 shadow-sm" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+              <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear me-2"></i> Settings</a></li>
+              <li><hr class="dropdown-divider" role="separator" aria-hidden="true"></li>
+              <li><a class="dropdown-item text-danger" href="logout.html"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="py-4 border-bottom">
+    <div class="container">
+      <h1 class="h3 mb-1">Create or Update an Event</h1>
+      <p class="text-muted mb-0">Add details, upload an image, and publish. Fields marked * are required.</p>
+    </div>
+  </header>
+
+  <main class="container py-4">
+    <form id="eventForm" class="row g-4">
+      <!-- Left column -->
+      <div class="col-12 col-lg-8">
+        <div class="card">
+          <div class="card-header fw-semibold">Event details</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title *</label>
+              <input id="title" type="text" class="form-control" required placeholder="e.g., Founders’ Breakfast: AI in Practice">
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description *</label>
+              <textarea id="description" class="form-control" rows="5" required placeholder="What is the event about? Who should attend?"></textarea>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label for="category" class="form-label">Category *</label>
+                <select id="category" class="form-select" required>
+                  <option selected disabled value="">Choose…</option>
+                  <option>Tech & AI</option>
+                  <option>Marketing</option>
+                  <option>Finance</option>
+                  <option>Health</option>
+                  <option>Education</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="format" class="form-label">Format *</label>
+                <select id="format" class="form-select" required>
+                  <option selected disabled value="">Choose…</option>
+                  <option>In-person</option>
+                  <option>Virtual</option>
+                  <option>Hybrid</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-0">
+              <div class="col-12 col-md-6">
+                <label for="date" class="form-label">Date *</label>
+                <input id="date" type="date" class="form-control" required>
+              </div>
+              <div class="col-6 col-md-3">
+                <label for="start" class="form-label">Start time *</label>
+                <input id="start" type="time" class="form-control" required>
+              </div>
+              <div class="col-6 col-md-3">
+                <label for="end" class="form-label">End time *</label>
+                <input id="end" type="time" class="form-control" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="timezone" class="form-label">Time zone</label>
+                <select id="timezone" class="form-select">
+                  <option value="+08:00">(GMT +8:00) Perth</option>
+                  <option value="+09:30">(GMT +9:30) Adelaide</option>
+                  <option value="+10:00">(GMT +10:00) Sydney (AEST/AEDT)</option>
+                  <option value="+10:00" selected>(GMT +10:00) Brisbane (AEST)</option>
+
+                  <option disabled>──────────</option>
+
+                  <option value="-12:00">(GMT -12:00) Eniwetok, Kwajalein</option>
+                  <option value="-11:00">(GMT -11:00) Midway Island, Samoa</option>
+                  <option value="-10:00">(GMT -10:00) Hawaii</option>
+                  <option value="-09:30">(GMT -9:30) Taiohae</option>
+                  <option value="-09:00">(GMT -9:00) Alaska</option>
+                  <option value="-08:00">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+                  <option value="-07:00">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+                  <option value="-06:00">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+                  <option value="-05:00">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+                  <option value="-04:30">(GMT -4:30) Caracas</option>
+                  <option value="-04:00">(GMT -4:00) Atlantic Time (Canada), La Paz</option>
+                  <option value="-03:30">(GMT -3:30) Newfoundland</option>
+                  <option value="-03:00">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+                  <option value="-02:00">(GMT -2:00) Mid-Atlantic</option>
+                  <option value="-01:00">(GMT -1:00) Azores, Cape Verde Islands</option>
+                  <option value="+00:00">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                  <option value="+01:00">(GMT +1:00) Brussels, Copenhagen, Madrid, Paris</option>
+                  <option value="+02:00">(GMT +2:00) Kaliningrad, South Africa</option>
+                  <option value="+03:00">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+                  <option value="+03:30">(GMT +3:30) Tehran</option>
+                  <option value="+04:00">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+                  <option value="+04:30">(GMT +4:30) Kabul</option>
+                  <option value="+05:00">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+                  <option value="+05:30">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+                  <option value="+05:45">(GMT +5:45) Kathmandu, Pokhara</option>
+                  <option value="+06:00">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+                  <option value="+06:30">(GMT +6:30) Yangon, Mandalay</option>
+                  <option value="+07:00">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+                  <option value="+08:45">(GMT +8:45) Eucla</option>
+                  <option value="+09:00">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+                  <option value="+10:30">(GMT +10:30) Lord Howe Island</option>
+                  <option value="+11:00">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+                  <option value="+11:30">(GMT +11:30) Norfolk Island</option>
+                  <option value="+12:00">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+                  <option value="+12:45">(GMT +12:45) Chatham Islands</option>
+                  <option value="+13:00">(GMT +13:00) Apia, Nukualofa</option>
+                  <option value="+14:00">(GMT +14:00) Line Islands, Tokelau</option>
+                </select>
+
+              </div>
+
+            </div>
+
+            <div class="row g-3 mt-0">
+              <div class="col-12 col-md-8">
+                <label for="venue" class="form-label">Location / Venue *</label>
+                <input id="venue" type="text" class="form-control" required placeholder="e.g., Brisbane CBD, Level 2, 123 Adelaide St">
+              </div>
+              <div class="col-12 col-md-4">
+                <label for="capacity" class="form-label">Capacity *</label>
+                <input id="capacity" type="number" min="1" step="1" class="form-control" required placeholder="e.g., 30">
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <label for="image" class="form-label">Event image *</label>
+              <input id="image" type="file" class="form-control" accept="image/*" required>
+              <div class="form-text">JPEG/PNG recommended. Appears on the event card and details page.</div>
+            </div>
+            <div class="mt-3">
+              <label for="imageAlt" class="form-label">Image alt text</label>
+              <input id="imageAlt" type="text" class="form-control" placeholder="Describe the image for screen readers">
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-header fw-semibold">Tickets & Pricing</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label for="price" class="form-label">Ticket price (AUD)</label>
+                <input id="price" type="number" class="form-control" min="0" step="0.01" placeholder="e.g., 25.00">
+                <div class="form-text">If $0, event will be listed as Free.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label for="rsvpClose" class="form-label">RSVP closes</label>
+                <input id="rsvpClose" type="datetime-local" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="card mt-4">
+          <div class="card-header fw-semibold">Host & contact</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label for="host" class="form-label">Host/Organisation *</label>
+                <input id="host" type="text" class="form-control" required placeholder="e.g., Brisbane Startups Collective">
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="contact" class="form-label">Contact email *</label>
+                <input id="contact" type="email" class="form-control" required placeholder="support@foundersbreakfast.com">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <aside class="col-12 col-lg-4">
+        <div class="card">
+          <div class="card-header fw-semibold">Publish</div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" name="action" value="publish" form="eventForm">
+                Publish
+              </button>
+
+              <button type="submit" class="btn btn-outline-secondary" name="action" value="draft" form="eventForm">
+                Save as Draft
+              </button>
+
+              <!-- CSS-only modal trigger -->
+              <a href="#scheduleModal" class="btn btn-info">Schedule</a>
+
+              <button type="reset" class="btn btn-outline-secondary">Reset</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CSS-ONLY MODAL -->
+      <div id="scheduleModal" class="modal-css" aria-labelledby="scheduleTitle" role="dialog" aria-modal="true">
+        <div class="modal-css__dialog card shadow">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 id="scheduleTitle" class="h5 mb-0">Schedule Publish</h2>
+            <!-- Close  -->
+            <a href="#" class="btn-close" aria-label="Close"></a>
+          </div>
+          <div class="card-body">
+            <!-- Inputs are bound to the main form via the `form` attribute -->
+            <div class="mb-3">
+              <label for="scheduleAt" class="form-label">Publish date &amp; time</label>
+              <input type="datetime-local" class="form-control" id="scheduleAt" name="scheduleAt" form="eventForm" aria-describedby="scheduleHelp">
+              <div id="scheduleHelp" class="form-text">Choose when this event should go live.</div>
+            </div>
+
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="notifyOnPublish" name="notifyOnPublish" value="1" form="eventForm">
+              <label class="form-check-label" for="notifyOnPublish">
+                Email me a reminder when the event is published
+              </label>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-info schedule-modal-button" name="action" value="schedule" form="eventForm">
+                Schedule
+              </button>
+              <a href="#" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer class="bg-light border-top py-5 mt-5">
+    <div class="container">
+      <div class="row">
+        <!-- Brand / About -->
+        <div class="col-md-4 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <img src="../static/img/bondra-logo.png" alt="Bondra logo" class="bondra-logo me-2">
+            <h5 class="fw-bold text-primary mb-0">Bondra</h5>
+          </div>
+          <p class="small text-muted">
+            A simple networking platform to connect through events, mentorship, and industry discussions.
+          </p>
+          <p class="small mb-0 text-muted">© 2025 Bondra</p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-6 col-md-2 mb-4">
+          <h6 class="fw-semibold">Company</h6>
+          <ul class="list-unstyled small">
+            <li><a class="text-decoration-none text-muted" href="index.html">About Us</a></li>
+            <li><a class="text-decoration-none text-muted" href="index.html">Our Team</a></li>
+            <li><a class="text-decoration-none text-muted" href="index.html">Careers</a></li>
+            <li><a class="text-decoration-none text-muted" href="index.html">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Policies -->
+        <div class="col-6 col-md-3 mb-4">
+          <h6 class="fw-semibold">Policies</h6>
+          <ul class="list-unstyled small">
+            <li><a class="text-decoration-none text-muted" href="index.html">Privacy Policy</a></li>
+            <li><a class="text-decoration-none text-muted" href="index.html">Terms of Service</a></li>
+            <li><a class="text-decoration-none text-muted" href="index.html">Refund Policy</a></li>
+          </ul>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="col-md-3 mb-4">
+          <h6 class="fw-semibold">Payment Methods</h6>
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <img class="payment-logo" src="../static/img/mastercard.svg" alt="Mastercard">
+            <img class="payment-logo" src="../static/img/visa.svg" alt="Visa">
+            <img class="payment-logo" src="../static/img/apple-pay.svg" alt="Apple Pay">
+            <img class="payment-logo" src="../static/img/google-pay.svg" alt="Google Pay">
+            <img class="payment-logo" src="../static/img/afterpay.svg" alt="Afterpay">
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
