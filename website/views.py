@@ -7,8 +7,12 @@ def index():
     return render_template('index.html', active_page='home')  
 @main_bp.route('/event')
 def event():
-    return render_template('event.html', active_page='event')
+    return render_template('event.html')
 
 @main_bp.route('/bookinghistory')
 def bookinghistory():
     return render_template('history.html', active_page='bookinghistory')
+
+@main_bp.route('/create-update')
+def createupdate():
+    return render_template('create-update.html', active_page='create-update')
