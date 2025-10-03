@@ -1,317 +1,222 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bondra – Booking History</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" >
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link href="../static/style/main.css" rel="stylesheet">
-</head>
-<body>
-  <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded" href="#main">Skip to content</a>
+{% extends "base.html" %}
+{% block title %}
+<title>Bondra – Booking History</title>
+{% endblock %}
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-    <div class="container">
-      <!-- Brand -->
-      <a class="navbar-brand fw-bold text-primary" href="index.html">
-        <img class="bondra-logo" src="../static/img/bondra-logo.png" alt="Bondra logo"> Bondra
-      </a>
-
-      <!-- Toggler -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <!-- Links -->
-      <div id="nav" class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-          <li class="nav-item">
-            <a class="nav-link active" href="index.html" aria-current="page">
-              <i class="bi bi-house-door-fill me-1"></i> Home
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="create-update.html">
-              <i class="bi bi-plus-circle me-1"></i> Create Event
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="history.html">
-              <i class="bi bi-clock-history me-1"></i> Booking History
-            </a>
-          </li>
-
-          <!-- Divider (desktop only) -->
-          <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
-
-          <!-- User Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="fw-semibold">Brad</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
-              <li><a class="dropdown-item" href="index.html"><i class="bi bi-gear me-2"></i> Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
+{% block breadcrumbs %}
+<!-- Breadcrumbs -->
+<div class="bg-light border-bottom">
+  <nav class="container small py-2" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Booking History</li>
+    </ol>
   </nav>
+</div>
+{% endblock %}
+{% block header %}
+<!-- Header -->
+<header class="py-4 border-bottom">
+  <div class="container">
+    <h1 class="h3 mb-1">Your Bookings</h1>
+    <p class="text-muted mb-0">View RSVP confirmations for upcoming and past events.</p>
+  </div>
+</header>
+{% endblock %}
 
-  <!-- Breadcrumbs -->
-  <div class="bg-light border-bottom">
-    <nav class="container small py-2" aria-label="breadcrumb">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Booking History</li>
-      </ol>
-    </nav>
+{% block content %}
+<main id="main" class="container py-4">
+  <!-- View toggle -->
+  <ul class="nav nav-tabs" id="historyViews" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="cards-tab" data-bs-toggle="tab" data-bs-target="#cards-pane" type="button"
+        role="tab" aria-controls="cards-pane" aria-selected="true">Cards view</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link d-none d-md-block" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-pane"
+        type="button" role="tab" aria-controls="table-pane" aria-selected="false">Table view</button>
+    </li>
+  </ul>
+
+  <div class="card mt-3 d-none" id="loading-skeleton">
+    <div class="card-body">
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- Skeleton card -->
+        <div class="col">
+          <div class="card h-100">
+            <div class="skeleton skeleton-img rounded-top"></div>
+            <div class="card-body">
+              <div class="skeleton skeleton-text w-75 mb-2"></div>
+              <div class="skeleton skeleton-text w-50 mb-3"></div>
+              <div class="skeleton skeleton-text w-100 mb-2"></div>
+              <div class="skeleton skeleton-text w-100 mb-2"></div>
+              <div class="skeleton skeleton-text w-25"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Duplicate skeletons for layout -->
+        <div class="col">
+          <div class="card h-100">
+            <div class="skeleton skeleton-img rounded-top"></div>
+            <div class="card-body">
+              <div class="skeleton skeleton-text w-75 mb-2"></div>
+              <div class="skeleton skeleton-text w-50 mb-3"></div>
+              <div class="skeleton skeleton-text w-100 mb-2"></div>
+              <div class="skeleton skeleton-text w-100 mb-2"></div>
+              <div class="skeleton skeleton-text w-25"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-muted mt-3">Prototype note: this is a static loading state (no JavaScript logic).</p>
+    </div>
   </div>
 
-  <!-- Header -->
-  <header class="py-4 border-bottom">
-    <div class="container">
-      <h1 class="h3 mb-1">Your Bookings</h1>
-      <p class="text-muted mb-0">View RSVP confirmations for upcoming and past events.</p>
-    </div>
-  </header>
-
-  <main id="main" class="container py-4">
-    <!-- View toggle -->
-    <ul class="nav nav-tabs" id="historyViews" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="cards-tab" data-bs-toggle="tab" data-bs-target="#cards-pane" type="button" role="tab" aria-controls="cards-pane" aria-selected="true">Cards view</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link d-none d-md-block" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-pane" type="button" role="tab" aria-controls="table-pane" aria-selected="false">Table view</button>
-      </li>
-    </ul>
-
-    <div class="card mt-3 d-none" id="loading-skeleton">
-      <div class="card-body">
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-          <!-- Skeleton card -->
-          <div class="col">
-            <div class="card h-100">
-              <div class="skeleton skeleton-img rounded-top"></div>
-              <div class="card-body">
-                <div class="skeleton skeleton-text w-75 mb-2"></div>
-                <div class="skeleton skeleton-text w-50 mb-3"></div>
-                <div class="skeleton skeleton-text w-100 mb-2"></div>
-                <div class="skeleton skeleton-text w-100 mb-2"></div>
-                <div class="skeleton skeleton-text w-25"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Duplicate skeletons for layout -->
-          <div class="col">
-            <div class="card h-100">
-              <div class="skeleton skeleton-img rounded-top"></div>
-              <div class="card-body">
-                <div class="skeleton skeleton-text w-75 mb-2"></div>
-                <div class="skeleton skeleton-text w-50 mb-3"></div>
-                <div class="skeleton skeleton-text w-100 mb-2"></div>
-                <div class="skeleton skeleton-text w-100 mb-2"></div>
-                <div class="skeleton skeleton-text w-25"></div>
-              </div>
-            </div>
-          </div>
+  <div class="tab-content pt-3" id="historyViewsContent">
+    <!-- ===== Cards View ===== -->
+    <div class="tab-pane fade show active" id="cards-pane" role="tabpanel" aria-labelledby="cards-tab" tabindex="0">
+      <div class="card d-none" id="empty-state-cards">
+        <div class="card-body text-center text-muted">
+          <p class="mb-2">No bookings yet.</p>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Browse events</a>
         </div>
-        <p class="small text-muted mt-3">Prototype note: this is a static loading state (no JavaScript logic).</p>
       </div>
-    </div>
 
-    <div class="tab-content pt-3" id="historyViewsContent">
-      <!-- ===== Cards View ===== -->
-      <div class="tab-pane fade show active" id="cards-pane" role="tabpanel" aria-labelledby="cards-tab" tabindex="0">
-        <div class="card d-none" id="empty-state-cards">
-          <div class="card-body text-center text-muted">
-            <p class="mb-2">No bookings yet.</p>
-            <a class="btn btn-outline-primary btn-sm" href="index.html">Browse events</a>
-          </div>
-        </div>
-
-        <!-- Cards grid -->
-        <div class="row row-cols-1 row-cols-md-2 g-4" id="cards-grid">
-          <!-- Booking Card A -->
-          <div class="col">
-            <article class="card h-100">
-              <div class="row g-0 h-100">
-                <div class="col-4">
-                  <img src="../static/img/founders-breakfast.jpg" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Founders’ Breakfast: AI in Practice cover">
-                </div>
-                <div class="col-8">
-                  <div class="card-body d-flex flex-column">
-                    <h2 class="h5 card-title mb-1">Founders’ Breakfast: AI in Practice</h2>
-                    <p class="text-muted small mb-2">Fri, 19 Sep 2025 • 6:30–9:30 PM • South Brisbane</p>
-                    <dl class="row small mb-3">
-                      <dt class="col-5">Booking ID</dt><dd class="col-7">NR-20250903-00124</dd>
-                      <dt class="col-5">Booked on</dt><dd class="col-7">Wed, 03 Sep 2025 • 9:42 PM</dd>
-                      <dt class="col-5">Tickets</dt><dd class="col-7">2</dd>
-                      <dt class="col-5">Status</dt><dd class="col-7"><span class="badge rounded-pill badge-open">Upcoming</span></dd>
-                    </dl>
-                    <div class="mt-auto d-flex gap-2">
-                      <a class="btn btn-outline-primary btn-sm" href="event.html">View event</a>
-                      <button class="btn btn-outline-secondary btn-sm" type="button">Cancel</button>
-                    </div>
+      <!-- Cards grid -->
+      <div class="row row-cols-1 row-cols-md-2 g-4" id="cards-grid">
+        <!-- Booking Card A -->
+        <div class="col">
+          <article class="card h-100">
+            <div class="row g-0 h-100">
+              <div class="col-4">
+                <img src="../static/img/founders-breakfast.jpg" class="img-fluid rounded-start h-100"
+                  style="object-fit: cover;" alt="Founders’ Breakfast: AI in Practice cover">
+              </div>
+              <div class="col-8">
+                <div class="card-body d-flex flex-column">
+                  <h2 class="h5 card-title mb-1">Founders’ Breakfast: AI in Practice</h2>
+                  <p class="text-muted small mb-2">Fri, 19 Sep 2025 • 6:30–9:30 PM • South Brisbane</p>
+                  <dl class="row small mb-3">
+                    <dt class="col-5">Booking ID</dt>
+                    <dd class="col-7">NR-20250903-00124</dd>
+                    <dt class="col-5">Booked on</dt>
+                    <dd class="col-7">Wed, 03 Sep 2025 • 9:42 PM</dd>
+                    <dt class="col-5">Tickets</dt>
+                    <dd class="col-7">2</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7"><span class="badge rounded-pill badge-open">Upcoming</span></dd>
+                  </dl>
+                  <div class="mt-auto d-flex gap-2">
+                    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.event') }}">View event</a>
+                    <button class="btn btn-outline-secondary btn-sm" type="button">Cancel</button>
                   </div>
                 </div>
               </div>
-            </article>
-          </div>
+            </div>
+          </article>
+        </div>
 
-          <!-- Booking Card B -->
-          <div class="col">
-            <article class="card h-100">
-              <div class="row g-0 h-100">
-                <div class="col-4">
-                  <img src="../static/img/finance-meetup.jpg" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="After-Work Finance Meetup cover">
-                </div>
-                <div class="col-8">
-                  <div class="card-body d-flex flex-column">
-                    <h2 class="h5 card-title mb-1">After-Work Finance Meetup</h2>
-                    <p class="text-muted small mb-2">Thu, 21 Aug 2025 • 5:30–7:00 PM • South Bank</p>
-                    <dl class="row small mb-3">
-                      <dt class="col-5">Booking ID</dt><dd class="col-7">NR-20250818-00077</dd>
-                      <dt class="col-5">Booked on</dt><dd class="col-7">Mon, 18 Aug 2025 • 6:11 PM</dd>
-                      <dt class="col-5">Tickets</dt><dd class="col-7">1</dd>
-                      <dt class="col-5">Status</dt><dd class="col-7"><span class="badge rounded-pill badge-inactive">Past</span></dd>
-                    </dl>
-                    <div class="mt-auto d-flex gap-2">
-                      <a class="btn btn-outline-secondary btn-sm" href="event.html">View event</a>
-                    </div>
+        <!-- Booking Card B -->
+        <div class="col">
+          <article class="card h-100">
+            <div class="row g-0 h-100">
+              <div class="col-4">
+                <img src="../static/img/finance-meetup.jpg" class="img-fluid rounded-start h-100"
+                  style="object-fit: cover;" alt="After-Work Finance Meetup cover">
+              </div>
+              <div class="col-8">
+                <div class="card-body d-flex flex-column">
+                  <h2 class="h5 card-title mb-1">After-Work Finance Meetup</h2>
+                  <p class="text-muted small mb-2">Thu, 21 Aug 2025 • 5:30–7:00 PM • South Bank</p>
+                  <dl class="row small mb-3">
+                    <dt class="col-5">Booking ID</dt>
+                    <dd class="col-7">NR-20250818-00077</dd>
+                    <dt class="col-5">Booked on</dt>
+                    <dd class="col-7">Mon, 18 Aug 2025 • 6:11 PM</dd>
+                    <dt class="col-5">Tickets</dt>
+                    <dd class="col-7">1</dd>
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7"><span class="badge rounded-pill badge-inactive">Past</span></dd>
+                  </dl>
+                  <div class="mt-auto d-flex gap-2">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.event') }}">View event</a>
                   </div>
                 </div>
               </div>
-            </article>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== Table View ===== -->
-      <div class="tab-pane fade" id="table-pane" role="tabpanel" aria-labelledby="table-tab" tabindex="0">
-        <!-- Empty state (table) -->
-        <div class="card d-none" id="empty-state-table">
-          <div class="card-body text-center text-muted">
-            <p class="mb-2">No bookings found.</p>
-            <a class="btn btn-outline-primary btn-sm" href="index.html">Browse events</a>
-          </div>
-        </div>
-
-        <div class="card" id="table-wrapper">
-          <div class="card-header fw-semibold">All bookings</div>
-          <div class="table-responsive">
-            <table class="table align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th scope="col">Event</th>
-                  <th scope="col">Booking ID</th>
-                  <th scope="col">Booked on</th>
-                  <th scope="col">Tickets</th>
-                  <th scope="col">Status</th>
-                  <th scope="col" class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <img src="../static/img/founders-breakfast.jpg" alt="" width="48" height="36" style="object-fit: cover;" class="rounded">
-                      <div>
-                        <div class="fw-semibold">Founders’ Breakfast: AI in Practice</div>
-                        <div class="small text-muted">Fri, 19 Sep 2025 • South Brisbane</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>NR-20250903-00124</td>
-                  <td>03 Sep 2025 • 9:42 PM</td>
-                  <td>2</td>
-                  <td><span class="badge rounded-pill badge-open">Upcoming</span></td>
-                  <td class="text-end">
-                    <a class="btn btn-sm btn-outline-primary" href="event.html">View</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <img src="../static/img/finance-meetup.jpg" alt="" width="48" height="36" style="object-fit: cover;" class="rounded">
-                      <div>
-                        <div class="fw-semibold">After-Work Finance Meetup</div>
-                        <div class="small text-muted">Thu, 21 Aug 2025 • South Bank</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>NR-20250818-00077</td>
-                  <td>18 Aug 2025 • 6:11 PM</td>
-                  <td>1</td>
-                  <td><span class="badge rounded-pill badge-inactive">Past</span></td>
-                  <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary" href="event.html">View</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            </div>
+          </article>
         </div>
       </div>
     </div>
-  </main>
 
-    <footer class="bg-light border-top py-5 mt-5">
-    <div class="container">
-      <div class="row">
-        <!-- Brand / About -->
-        <div class="col-md-4 mb-4">
-          <div class="d-flex align-items-center mb-2">
-            <img src="../static/img/bondra-logo.png" alt="Bondra logo" class="bondra-logo me-2">
-            <h5 class="fw-bold text-primary mb-0">Bondra</h5>
-          </div>
-          <p class="small text-muted">
-            A simple networking platform to connect through events, mentorship, and industry discussions.
-          </p>
-          <p class="small mb-0 text-muted">© 2025 Bondra</p>
+    <!-- ===== Table View ===== -->
+    <div class="tab-pane fade" id="table-pane" role="tabpanel" aria-labelledby="table-tab" tabindex="0">
+      <!-- Empty state (table) -->
+      <div class="card d-none" id="empty-state-table">
+        <div class="card-body text-center text-muted">
+          <p class="mb-2">No bookings found.</p>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Browse events</a>
         </div>
+      </div>
 
-        <!-- Quick Links -->
-        <div class="col-6 col-md-2 mb-4">
-          <h6 class="fw-semibold">Company</h6>
-          <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">About Us</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Our Team</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Careers</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Contact</a></li>
-          </ul>
-        </div>
-
-        <!-- Policies -->
-        <div class="col-6 col-md-3 mb-4">
-          <h6 class="fw-semibold">Policies</h6>
-          <ul class="list-unstyled small">
-            <li><a class="text-decoration-none text-muted" href="index.html">Privacy Policy</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Terms of Service</a></li>
-            <li><a class="text-decoration-none text-muted" href="index.html">Refund Policy</a></li>
-          </ul>
-        </div>
-
-        <!-- Payment Methods -->
-        <div class="col-md-3 mb-4">
-          <h6 class="fw-semibold">Payment Methods</h6>
-          <div class="d-flex flex-wrap align-items-center gap-3">
-            <img class="payment-logo" src="../static/img/mastercard.svg" alt="Mastercard">
-            <img class="payment-logo" src="../static/img/visa.svg" alt="Visa">
-            <img class="payment-logo" src="../static/img/apple-pay.svg" alt="Apple Pay">
-            <img class="payment-logo" src="../static/img/google-pay.svg" alt="Google Pay">
-            <img class="payment-logo" src="../static/img/afterpay.svg" alt="Afterpay">
-          </div>
+      <div class="card" id="table-wrapper">
+        <div class="card-header fw-semibold">All bookings</div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Event</th>
+                <th scope="col">Booking ID</th>
+                <th scope="col">Booked on</th>
+                <th scope="col">Tickets</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="../static/img/founders-breakfast.jpg" alt="" width="48" height="36"
+                      style="object-fit: cover;" class="rounded">
+                    <div>
+                      <div class="fw-semibold">Founders’ Breakfast: AI in Practice</div>
+                      <div class="small text-muted">Fri, 19 Sep 2025 • South Brisbane</div>
+                    </div>
+                  </div>
+                </td>
+                <td>NR-20250903-00124</td>
+                <td>03 Sep 2025 • 9:42 PM</td>
+                <td>2</td>
+                <td><span class="badge rounded-pill badge-open">Upcoming</span></td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.event') }}">View</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="../static/img/finance-meetup.jpg" alt="" width="48" height="36" style="object-fit: cover;"
+                      class="rounded">
+                    <div>
+                      <div class="fw-semibold">After-Work Finance Meetup</div>
+                      <div class="small text-muted">Thu, 21 Aug 2025 • South Bank</div>
+                    </div>
+                  </div>
+                </td>
+                <td>NR-20250818-00077</td>
+                <td>18 Aug 2025 • 6:11 PM</td>
+                <td>1</td>
+                <td><span class="badge rounded-pill badge-inactive">Past</span></td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.event') }}">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  </div>
+</main>
+{% endblock %}
