@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms.fields import TextAreaField, SubmitField, StringField, PasswordField, DateField, TimeField, FileField, DecimalField, SelectField, DateTimeField
-from wtforms.validators import InputRequired, Length, Email, EqualTo, DataRequired
+from datetime import datetime
+from wtforms.validators import InputRequired, Length, Email, EqualTo, DataRequired, ValidationError
 
 # creates the login information
 class LoginForm(FlaskForm):
@@ -85,3 +86,18 @@ class CreateEventForm(FlaskForm):
     #draft = SubmitField("Save as Draft")
     #schedule = SubmitField("Schedule")
     #reset = SubmitField("Reset")
+    def validate_end_time(self, field):
+        if self.start_time.data and field.data:
+            if field.data <= self.start_time.data:
+                raise ValidationError("End Time must be after Start Time.")
+
+    def validate_rsvp_closes(self, field):
+        if self.date.data and field.data and self.start_time.data:
+            event_datetime = datetime.combine(self.date.data, self.start_time.data)
+            if field.data >= event_datetime:
+                raise ValidationError("RSVP Closing Date must be before the event start date and time.")
+
+    def validate_date(self, field):
+        if field.data:
+            if field.data < datetime.today().date():
+                raise ValidationError("Event date must be in the future.")

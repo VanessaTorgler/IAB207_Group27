@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     # relation to call user.comments and comment.created_by
-    comments = db.relationship('Comment', backref='user')
+    comments = db.relationship('Comment', backref='user', foreign_keys='Comment.user_id')
     
     # string print method
     def __repr__(self):
@@ -36,7 +36,7 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     deleted_at = db.Column(db.DateTime, nullable=True)
-    location_type = db.Column(db.String(16))
+    #location_type = db.Column(db.String(16))
     location_text = db.Column(db.String(200))
     join_url = db.Column(db.String(255))
     join_url_release_at = db.Column(db.DateTime)
@@ -44,7 +44,7 @@ class Event(db.Model):
     cancelled = db.Column(db.Boolean, default=False)
     # ... Create the Comments db.relationship
 	# relation to call destination.comments and comment.destination
-    comments = db.relationship('Comment', backref='destination')
+    comments = db.relationship('Comment', backref='event', foreign_keys='Comment.event_id')
 	
     # string print method
     def __repr__(self):

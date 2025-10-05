@@ -17,11 +17,26 @@
 <main class="container py-4">
   <form id="eventForm" class="row g-4" method="POST">
     {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
     <!-- Left column -->
     <div class="col-12 col-lg-8">
       <div class="card">
         <div class="card-header fw-semibold">Event details</div>
         <div class="card-body">
+          <div class="mb-3">
+            {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+              Please correct the errors below.
+              <ul class="errors">
+                {% for field_name, error_list in form.errors.items() %}
+                {% for error in error_list %}
+                <li>{{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </div>
+          </div>
           <div class="mb-3">
             <label for="title" class="form-label">Title *</label>
             <input id="title" name="title" type="text" value="{{ form.title.data }}" class="form-control" required
