@@ -44,7 +44,9 @@ class Event(db.Model):
     cancelled = db.Column(db.Boolean, default=False)
     # ... Create the Comments db.relationship
 	# relation to call destination.comments and comment.destination
-    comments = db.relationship('Comment', backref='event', foreign_keys='Comment.event_id')
+    comments = db.relationship('Comment', backref='event_comments', foreign_keys='Comment.event_id')
+    tags = db.relationship('Event_Tag', backref='event_tags', foreign_keys='Event_Tag.event_id')
+    images = db.relationship('Event_Image', backref='event_images', foreign_keys='Event_Image.event_id')
 	
     # string print method
     def __repr__(self):

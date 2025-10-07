@@ -19,8 +19,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sitedata.sqlite'
     # initialise db with flask app
     db.init_app(app)
+    #create the db tables and add tags. uncomment if you make changes to models.py
     #with app.app_context():
-      #from . import models
+     # from . import models
       #db.create_all()
       #from .models import Tag
       #tag1 = Tag(name="Tech & AI")
