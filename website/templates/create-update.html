@@ -23,8 +23,8 @@
       <div class="card">
         <div class="card-header fw-semibold">Event details</div>
         <div class="card-body">
+          {% if form.errors %}
           <div class="mb-3">
-            {% if form.errors %}
             <div class="alert alert-danger" role="alert">
               Please correct the errors below.
               <ul class="errors">
@@ -34,9 +34,9 @@
                 {% endfor %}
                 {% endfor %}
               </ul>
-              {% endif %}
             </div>
           </div>
+          {% endif %}
           <div class="mb-3">
             <label for="title" class="form-label">Title *</label>
             <input id="title" name="title" type="text" value="{{ form.title.data }}" class="form-control" required

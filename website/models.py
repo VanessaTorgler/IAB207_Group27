@@ -122,7 +122,7 @@ class Payment(db.Model):
     def __repr__(self):
         return f"Payment: {self.id}"
     
-class event_images(db.Model):
+class Event_Image(db.Model):
     __tablename__ = 'event_images'
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id')) #add the unique, or nah?
@@ -134,7 +134,7 @@ class event_images(db.Model):
     def __repr__(self):
         return f"Image: {self.url}"
     
-class event_tags(db.Model):
+class Event_Tag(db.Model):
     __tablename__ = 'event_tags'
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
@@ -144,7 +144,7 @@ class event_tags(db.Model):
     def __repr__(self):
         return f"Tag: {self.tag_id}"
     
-class tags(db.Model):
+class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60), unique=True)
