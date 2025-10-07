@@ -22,7 +22,14 @@ def create_app():
     #with app.app_context():
       #from . import models
       #db.create_all()
-
+      #from .models import Tag
+      #tag1 = Tag(name="Tech & AI")
+      #tag2 = Tag(name="Marketing")
+      #tag3 = Tag(name="Finance")
+      #tag4 = Tag(name="Health")
+      #tag5 = Tag(name="Education")
+      #db.session.add_all([tag1, tag2, tag3, tag4, tag5])
+      #db.session.commit()
     Bootstrap5(app)
     
     # initialise the login manager

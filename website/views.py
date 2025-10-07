@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from .forms import CreateEventForm
-from .models import Event, Event_Image
+from .models import Event, Event_Image, Event_Tag, Tag
 from . import db
 
 main_bp = Blueprint('main', __name__)
@@ -37,8 +37,14 @@ def createUpdate():
             url=form.event_image.data,
             alt_text=form.image_alt_text.data
         )
+        tagfind = db.session.execute(db.select(Tag).where(Tag.name==form.category.data)).scalar_one()
+        event_tag = Event_Tag(
+            event_id=event.id,
+            tag_id=tagfind.id
+        )
         db.session.add(event)
         db.session.add(event_img)
+        db.session.add(event_tag)
         db.session.commit()
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
