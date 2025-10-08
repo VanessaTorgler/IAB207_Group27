@@ -15,43 +15,59 @@
 {% block content %}
 
 <main class="container py-4">
-  <form id="eventForm" class="row g-4">
+  <form id="eventForm" class="row g-4" method="POST">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
     <!-- Left column -->
     <div class="col-12 col-lg-8">
       <div class="card">
         <div class="card-header fw-semibold">Event details</div>
         <div class="card-body">
+          {% if form.errors %}
+          <div class="mb-3">
+            <div class="alert alert-danger" role="alert">
+              Please correct the errors below.
+              <ul class="errors">
+                {% for field_name, error_list in form.errors.items() %}
+                {% for error in error_list %}
+                <li>{{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          {% endif %}
           <div class="mb-3">
             <label for="title" class="form-label">Title *</label>
-            <input id="title" type="text" class="form-control" required
+            <input id="title" name="title" type="text" value="{{ form.title.data }}" class="form-control" required
               placeholder="e.g., Founders’ Breakfast: AI in Practice">
           </div>
 
           <div class="mb-3">
             <label for="description" class="form-label">Description *</label>
-            <textarea id="description" class="form-control" rows="5" required
-              placeholder="What is the event about? Who should attend?"></textarea>
+            <textarea id="description" name="description" value="{{ form.description.data }}" class="form-control"
+              rows="5" required placeholder="What is the event about? Who should attend?"></textarea>
           </div>
 
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label for="category" class="form-label">Category *</label>
-              <select id="category" class="form-select" required>
-                <option selected disabled value="">Choose…</option>
-                <option>Tech & AI</option>
-                <option>Marketing</option>
-                <option>Finance</option>
-                <option>Health</option>
-                <option>Education</option>
+              <select id="category" name="category" class="form-select" required>
+                {% for value, label in form.category.choices %}
+                <option value="{{ value }}" {% if form.category.data==value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
               </select>
             </div>
             <div class="col-12 col-md-6">
               <label for="format" class="form-label">Format *</label>
-              <select id="format" class="form-select" required>
-                <option selected disabled value="">Choose…</option>
-                <option>In-person</option>
-                <option>Virtual</option>
-                <option>Hybrid</option>
+              <select id="format" name="format" class="form-select" required>
+                {% for value, label in form.format.choices %}
+                <option value="{{ value }}" {% if form.format.data==value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
               </select>
             </div>
           </div>
@@ -59,63 +75,31 @@
           <div class="row g-3 mt-0">
             <div class="col-12 col-md-6">
               <label for="date" class="form-label">Date *</label>
-              <input id="date" type="date" class="form-control" required>
+              <input id="date" type="date" name="date"
+                value="{{ form.date.data.strftime('%Y-%m-%d') if form.date.data else '' }}" class="form-control"
+                required>
+
             </div>
             <div class="col-6 col-md-3">
               <label for="start" class="form-label">Start time *</label>
-              <input id="start" type="time" class="form-control" required>
+              <input id="start" type="time" name="start_time"
+                value="{{ form.start_time.data.strftime('%H:%M') if form.start_time.data else '' }}"
+                class="form-control" required>
             </div>
             <div class="col-6 col-md-3">
               <label for="end" class="form-label">End time *</label>
-              <input id="end" type="time" class="form-control" required>
+              <input id="end" type="time" name="end_time"
+                value="{{ form.end_time.data.strftime('%H:%M') if form.end_time.data else '' }}" class="form-control"
+                required>
             </div>
             <div class="col-12 col-md-6">
               <label for="timezone" class="form-label">Time zone</label>
-              <select id="timezone" class="form-select">
-                <option value="+08:00">(GMT +8:00) Perth</option>
-                <option value="+09:30">(GMT +9:30) Adelaide</option>
-                <option value="+10:00">(GMT +10:00) Sydney (AEST/AEDT)</option>
-                <option value="+10:00" selected>(GMT +10:00) Brisbane (AEST)</option>
-
-                <option disabled>──────────</option>
-
-                <option value="-12:00">(GMT -12:00) Eniwetok, Kwajalein</option>
-                <option value="-11:00">(GMT -11:00) Midway Island, Samoa</option>
-                <option value="-10:00">(GMT -10:00) Hawaii</option>
-                <option value="-09:30">(GMT -9:30) Taiohae</option>
-                <option value="-09:00">(GMT -9:00) Alaska</option>
-                <option value="-08:00">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
-                <option value="-07:00">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
-                <option value="-06:00">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
-                <option value="-05:00">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
-                <option value="-04:30">(GMT -4:30) Caracas</option>
-                <option value="-04:00">(GMT -4:00) Atlantic Time (Canada), La Paz</option>
-                <option value="-03:30">(GMT -3:30) Newfoundland</option>
-                <option value="-03:00">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
-                <option value="-02:00">(GMT -2:00) Mid-Atlantic</option>
-                <option value="-01:00">(GMT -1:00) Azores, Cape Verde Islands</option>
-                <option value="+00:00">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
-                <option value="+01:00">(GMT +1:00) Brussels, Copenhagen, Madrid, Paris</option>
-                <option value="+02:00">(GMT +2:00) Kaliningrad, South Africa</option>
-                <option value="+03:00">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-                <option value="+03:30">(GMT +3:30) Tehran</option>
-                <option value="+04:00">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-                <option value="+04:30">(GMT +4:30) Kabul</option>
-                <option value="+05:00">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-                <option value="+05:30">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
-                <option value="+05:45">(GMT +5:45) Kathmandu, Pokhara</option>
-                <option value="+06:00">(GMT +6:00) Almaty, Dhaka, Colombo</option>
-                <option value="+06:30">(GMT +6:30) Yangon, Mandalay</option>
-                <option value="+07:00">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
-                <option value="+08:45">(GMT +8:45) Eucla</option>
-                <option value="+09:00">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-                <option value="+10:30">(GMT +10:30) Lord Howe Island</option>
-                <option value="+11:00">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
-                <option value="+11:30">(GMT +11:30) Norfolk Island</option>
-                <option value="+12:00">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
-                <option value="+12:45">(GMT +12:45) Chatham Islands</option>
-                <option value="+13:00">(GMT +13:00) Apia, Nukualofa</option>
-                <option value="+14:00">(GMT +14:00) Line Islands, Tokelau</option>
+              <select id="timezone" name="timezone" class="form-select">
+                {% for value, label in form.timezone.choices %}
+                <option value="{{ value }}" {% if form.timezone.data==value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+                {% endfor %}
               </select>
 
             </div>
@@ -125,23 +109,26 @@
           <div class="row g-3 mt-0">
             <div class="col-12 col-md-8">
               <label for="venue" class="form-label">Location / Venue *</label>
-              <input id="venue" type="text" class="form-control" required
-                placeholder="e.g., Brisbane CBD, Level 2, 123 Adelaide St">
+              <input id="venue" name="location" type="text" value="{{ form.location.data }}" class="form-control"
+                required placeholder="e.g., Brisbane CBD, Level 2, 123 Adelaide St">
             </div>
             <div class="col-12 col-md-4">
               <label for="capacity" class="form-label">Capacity *</label>
-              <input id="capacity" type="number" min="1" step="1" class="form-control" required placeholder="e.g., 30">
+              <input id="capacity" name="capacity" type="number" value="{{ form.capacity.data }}" min="1" step="1"
+                class="form-control" required placeholder="e.g., 30">
             </div>
           </div>
 
           <div class="mt-3">
             <label for="image" class="form-label">Event image *</label>
-            <input id="image" type="file" class="form-control" accept="image/*" required>
+            <input id="image" name="event_image" type="file" value="{{ form.event_image.data }}" class="form-control"
+              accept="image/*" required>
             <div class="form-text">JPEG/PNG recommended. Appears on the event card and details page.</div>
           </div>
           <div class="mt-3">
             <label for="imageAlt" class="form-label">Image alt text</label>
-            <input id="imageAlt" type="text" class="form-control" placeholder="Describe the image for screen readers">
+            <input id="imageAlt" name="image_alt_text" type="text" value="{{ form.image_alt_text.data }}"
+              class="form-control" placeholder="Describe the image for screen readers">
           </div>
         </div>
       </div>
@@ -152,12 +139,14 @@
           <div class="row g-3">
             <div class="col-12 col-md-4">
               <label for="price" class="form-label">Ticket price (AUD)</label>
-              <input id="price" type="number" class="form-control" min="0" step="0.01" placeholder="e.g., 25.00">
+              <input id="price" name="ticket_price" type="number" value="{{ form.ticket_price.data }}"
+                class="form-control" min="0" step="0.01" placeholder="e.g., 25.00">
               <div class="form-text">If $0, event will be listed as Free.</div>
             </div>
             <div class="col-12 col-md-4">
               <label for="rsvpClose" class="form-label">RSVP closes</label>
-              <input id="rsvpClose" type="datetime-local" class="form-control">
+              <input id="rsvpClose" name="rsvp_closes" value="{{ form.rsvp_closes.data }}" type="datetime-local"
+                class="form-control">
             </div>
           </div>
         </div>
@@ -170,13 +159,13 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label for="host" class="form-label">Host/Organisation *</label>
-              <input id="host" type="text" class="form-control" required
-                placeholder="e.g., Brisbane Startups Collective">
+              <input id="host" name="host_name" value="{{ form.host_name.data }}" type="text" class="form-control"
+                required placeholder="e.g., Brisbane Startups Collective">
             </div>
             <div class="col-12 col-md-6">
               <label for="contact" class="form-label">Contact email *</label>
-              <input id="contact" type="email" class="form-control" required
-                placeholder="support@foundersbreakfast.com">
+              <input id="contact" name="host_contact" value="{{ form.host_contact.data }}" type="email"
+                class="form-control" required placeholder="support@foundersbreakfast.com">
             </div>
           </div>
         </div>

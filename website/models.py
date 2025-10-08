@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     # relation to call user.comments and comment.created_by
-    comments = db.relationship('Comment', backref='user')
+    comments = db.relationship('Comment', backref='user', foreign_keys='Comment.user_id')
     
     # string print method
     def __repr__(self):
@@ -36,7 +36,7 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     deleted_at = db.Column(db.DateTime, nullable=True)
-    location_type = db.Column(db.String(16))
+    #location_type = db.Column(db.String(16))
     location_text = db.Column(db.String(200))
     join_url = db.Column(db.String(255))
     join_url_release_at = db.Column(db.DateTime)
@@ -44,7 +44,9 @@ class Event(db.Model):
     cancelled = db.Column(db.Boolean, default=False)
     # ... Create the Comments db.relationship
 	# relation to call destination.comments and comment.destination
-    comments = db.relationship('Comment', backref='destination')
+    comments = db.relationship('Comment', backref='event_comments', foreign_keys='Comment.event_id')
+    tags = db.relationship('Event_Tag', backref='event_tags', foreign_keys='Event_Tag.event_id')
+    images = db.relationship('Event_Image', backref='event_images', foreign_keys='Event_Image.event_id')
 	
     # string print method
     def __repr__(self):
@@ -122,7 +124,7 @@ class Payment(db.Model):
     def __repr__(self):
         return f"Payment: {self.id}"
     
-class event_images(db.Model):
+class Event_Image(db.Model):
     __tablename__ = 'event_images'
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id')) #add the unique, or nah?
@@ -134,7 +136,7 @@ class event_images(db.Model):
     def __repr__(self):
         return f"Image: {self.url}"
     
-class event_tags(db.Model):
+class Event_Tag(db.Model):
     __tablename__ = 'event_tags'
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
@@ -144,7 +146,7 @@ class event_tags(db.Model):
     def __repr__(self):
         return f"Tag: {self.tag_id}"
     
-class tags(db.Model):
+class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60), unique=True)

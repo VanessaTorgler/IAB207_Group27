@@ -4,6 +4,7 @@ from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
+
 db = SQLAlchemy()
 
 # create a function that creates a web application
@@ -18,7 +19,18 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sitedata.sqlite'
     # initialise db with flask app
     db.init_app(app)
-
+    #create the db tables and add tags. uncomment if you make changes to models.py
+    #with app.app_context():
+     # from . import models
+      #db.create_all()
+      #from .models import Tag
+      #tag1 = Tag(name="Tech & AI")
+      #tag2 = Tag(name="Marketing")
+      #tag3 = Tag(name="Finance")
+      #tag4 = Tag(name="Health")
+      #tag5 = Tag(name="Education")
+      #db.session.add_all([tag1, tag2, tag3, tag4, tag5])
+      #db.session.commit()
     Bootstrap5(app)
     
     # initialise the login manager
@@ -28,7 +40,6 @@ def create_app():
     # in our case it is auth.login (blueprintname.viewfunction name)
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
-
     # create a user loader function takes userid and returns User
     # Importing inside the create_app function avoids circular references
     from .models import User
