@@ -8,7 +8,9 @@ class LoginForm(FlaskForm):
     user_name=StringField("User Name", validators=[InputRequired('Enter user name')])
     password=PasswordField("Password", validators=[InputRequired('Enter user password')])
     submit = SubmitField("Login")
-
+class CommentForm(FlaskForm):
+    comment=TextAreaField("Comment", validators=[InputRequired(), Length(min=1, max=500)])
+    submit = SubmitField("Post Comment")
  # this is the registration form
 class RegisterForm(FlaskForm):
     user_name=StringField("User Name", validators=[InputRequired()])
