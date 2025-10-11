@@ -1,22 +1,30 @@
-from flask import Blueprint, render_template
-from .forms import CreateEventForm
-from .models import Event, Event_Image, Event_Tag, Tag
+from flask import Blueprint, render_template, session
+from flask_login import login_required, current_user
+from .forms import CreateEventForm, CommentForm
+from .models import Event, Event_Image, Event_Tag, Tag, Comment
 from . import db
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/home')
 def index():
+    session['event'] = None
     return render_template('index.html', active_page='home')  
-@main_bp.route('/event')
-def event():
-    return render_template('event.html')
+@main_bp.route('/event') #/<int:event_id>', methods=['GET', 'POST']
+def event(): #event_id
+    #session['event'] = event_id
+    #form = CommentForm() 
+    #if form.validate_on_submit():
+    #    comment = Comment(event_id, current_user.id, form.comment.data)
+    return render_template('event.html', )#event_id=event_id
 
 @main_bp.route('/bookinghistory')
+#@login_required
 def bookingHistory():
     return render_template('history.html', active_page='bookinghistory')
 
 @main_bp.route('/create-update', methods=['GET', 'POST'])
+#@login_required
 def createUpdate():
     form = CreateEventForm() 
     if form.validate_on_submit():
@@ -48,5 +56,7 @@ def createUpdate():
         db.session.commit()
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
+        form = CreateEventForm(formdata=None) 
+
     print(form.errors)
     return render_template('create-update.html', active_page='create-update', form=form)
