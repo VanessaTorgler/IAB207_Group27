@@ -31,17 +31,17 @@
 
         <dl class="row small mb-3">
           <dt class="col-4 col-sm-3">Date</dt>
-          <dd class="col-8 col-sm-9">Fri, 19 Sep 2025</dd>
+          <dd class="col-8 col-sm-9">{{ start_at_date }}</dd>
           <dt class="col-4 col-sm-3">Time</dt>
-          <dd class="col-8 col-sm-9">6:30–9:30 PM AEST</dd>
+          <dd class="col-8 col-sm-9">{{start_at_time}}–{{end_at}} PM AEST</dd>
           <dt class="col-4 col-sm-3">Format</dt>
-          <dd class="col-8 col-sm-9">In-person • South Brisbane</dd>
+          <dd class="col-8 col-sm-9">{{ format_type }} • South Brisbane</dd>
           <dt class="col-4 col-sm-3">Category</dt>
-          <dd class="col-8 col-sm-9">Tech &amp; AI</dd>
+          <dd class="col-8 col-sm-9">{{ category }}</dd>
           <dt class="col-4 col-sm-3">Capacity</dt>
           <dd class="col-8 col-sm-9">500 seats • 78 remaining</dd>
           <dt class="col-4 col-sm-3">Price</dt>
-          <dd class="col-8 col-sm-9">$35</dd>
+          <dd class="col-8 col-sm-9">{{ price }}</dd>
         </dl>
 
         <p class="mb-3">
@@ -73,7 +73,7 @@
       </div>
       <div class="modal-body small">
         <p class="mb-2">Event: <strong>{{ title }}</strong></p>
-        <p class="mb-2">Date/Time: { start_at }</p>
+        <p class="mb-2">Date/Time: {{ start_at }}</p>
         <div class="mb-3">
           <label for="modalTicketQty" class="form-label">Tickets</label>
           <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">

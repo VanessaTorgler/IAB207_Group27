@@ -34,6 +34,7 @@ class Event(db.Model):
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.now())
+    rsvp_closes = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     deleted_at = db.Column(db.DateTime, nullable=True)
     #location_type = db.Column(db.String(16))
