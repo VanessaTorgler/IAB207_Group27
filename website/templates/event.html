@@ -25,7 +25,15 @@
           alt="Cover image for Founders’ Breakfast: AI in Practice">
       </div>
       <div class="col-12 col-lg-5">
+        {% if status == 'Open' %}
         <span class="badge rounded-pill badge-open mb-2">Open</span>
+        {% elif status == 'Cancelled' %}
+        <span class="badge rounded-pill badge-cancelled mb-2">Cancelled</span>
+        {% elif status == 'Inactive' %}
+        <span class="badge rounded-pill badge-inactive mb-2">Inactive</span>
+        {% elif status == 'Sold Out' %}
+        <span class="badge rounded-pill badge-soldout mb-2">Sold Out</span>
+        {% endif %}
         <h1 class="h3 mb-2">{{ title }}</h1>
         <p class="text-muted mb-3">Hosted by <strong>{{ host_name }}</strong></p>
 
@@ -73,7 +81,7 @@
       </div>
       <div class="modal-body small">
         <p class="mb-2">Event: <strong>{{ title }}</strong></p>
-        <p class="mb-2">Date/Time: {{ start_at }}</p>
+        <p class="mb-2">Date/Time: {{ start_at_date }} at {{ start_at_time }}</p>
         <div class="mb-3">
           <label for="modalTicketQty" class="form-label">Tickets</label>
           <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, session
 from flask_login import login_required, current_user
 from .forms import CreateEventForm, CommentForm
-from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType
+from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
+from datetime import datetime
 from . import db
 
 main_bp = Blueprint('main', __name__)
@@ -30,12 +31,27 @@ def event(event_id):
     endAt = db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one()
     endAt = endAt.strftime("%I:%M %p").lstrip("0")
     image = db.session.execute(db.select(Event_Image.url).where(Event_Image.event_id==event_id)).scalar_one()
-    return render_template('event.html', event_id=event_id, title=title, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity, host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event')
+    status = checkStatus(event_id)
+    return render_template('event.html', event_id=event_id, title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity, host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event')
 
 @main_bp.route('/bookinghistory')
 #@login_required
 def bookingHistory():
     return render_template('history.html', active_page='bookinghistory')
+
+def checkStatus(event_id):
+    #if it's cancelled, return "Cancelled
+    if db.session.execute(db.select(Event.cancelled).where(Event.id==event_id)).scalar_one() == True:
+        return "Cancelled"
+    #if it's past, return "Inactive"
+    elif db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one() < datetime.now():
+        return "Inactive"
+    #if num of tickets sold = capacity, return "Sold Out"
+    elif db.session.execute(db.select(Event.capacity).where(Event.id==event_id)).scalar_one() <= db.session.execute(db.select(db.func.count(Booking.booking_id)).where(Booking.event_id==event_id)).scalar_one():
+        return "Sold Out"
+    else:
+        return "Open"
+
 
 @main_bp.route('/create-update', methods=['GET', 'POST'])
 #@login_required
