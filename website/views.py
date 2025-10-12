@@ -10,13 +10,20 @@ main_bp = Blueprint('main', __name__)
 def index():
     session['event'] = None
     return render_template('index.html', active_page='home')  
-@main_bp.route('/event') #/<int:event_id>', methods=['GET', 'POST']
-def event(): #event_id
-    #session['event'] = event_id
+@main_bp.route('/event/<int:event_id>', methods=['GET', 'POST'])
+def event(event_id):
+    session['event'] = event_id
     #form = CommentForm() 
     #if form.validate_on_submit():
     #    comment = Comment(event_id, current_user.id, form.comment.data)
-    return render_template('event.html', )#event_id=event_id
+    title = db.session.execute(db.select(Event.title).where(Event.id==event_id)).scalar_one()
+    description = db.session.execute(db.select(Event.description).where(Event.id==event_id)).scalar_one()
+    capacity = db.session.execute(db.select(Event.capacity).where(Event.id==event_id)).scalar_one()
+    hostName = db.session.execute(db.select(Event.host_user_id).where(Event.id==event_id)).scalar_one()
+    startAt = db.session.execute(db.select(Event.start_at).where(Event.id==event_id)).scalar_one()
+    endAt = db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one()
+    image = db.session.execute(db.select(Event_Image.url).where(Event_Image.event_id==event_id)).scalar_one()
+    return render_template('event.html', event_id=event_id, title=title, description=description, capacity=capacity, host_name=hostName, start_at=startAt, end_at=endAt, image=image, active_page='event')
 
 @main_bp.route('/bookinghistory')
 #@login_required
@@ -40,6 +47,8 @@ def createUpdate():
             location_text=form.location.data,
             capacity=form.capacity.data
         )
+        db.session.add(event)
+        db.session.flush()
         event_img = Event_Image(
             event_id=event.id,
             url=form.event_image.data,
@@ -50,7 +59,6 @@ def createUpdate():
             event_id=event.id,
             tag_id=tagfind.id
         )
-        db.session.add(event)
         db.session.add(event_img)
         db.session.add(event_tag)
         db.session.commit()

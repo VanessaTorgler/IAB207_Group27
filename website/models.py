@@ -26,7 +26,7 @@ class User(db.Model, UserMixin):
 class Event(db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id')) #fix once users exist
     title = db.Column(db.String(160))
     description = db.Column(db.Text)
     event_type = db.Column(db.String(40))

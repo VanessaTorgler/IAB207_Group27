@@ -21,13 +21,13 @@
   <div class="container">
     <div class="row g-4 align-items-center py-4">
       <div class="col-12 col-lg-7">
-        <img src="../static/img/founders-breakfast.jpg" class="img-fluid rounded"
+        <img src="../static/img/{{image}}" class="img-fluid rounded"
           alt="Cover image for Founders’ Breakfast: AI in Practice">
       </div>
       <div class="col-12 col-lg-5">
         <span class="badge rounded-pill badge-open mb-2">Open</span>
-        <h1 class="h3 mb-2">Founders’ Breakfast: AI in Practice</h1>
-        <p class="text-muted mb-3">Hosted by <strong>Brisbane Startups Collective</strong></p>
+        <h1 class="h3 mb-2">{{ title }}</h1>
+        <p class="text-muted mb-3">Hosted by <strong>{{ host_name }}</strong></p>
 
         <dl class="row small mb-3">
           <dt class="col-4 col-sm-3">Date</dt>
@@ -72,8 +72,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
       </div>
       <div class="modal-body small">
-        <p class="mb-2">Event: <strong>Founders’ Breakfast: AI in Practice</strong></p>
-        <p class="mb-2">Date/Time: Fri, 19 Sep 2025 • 6:30–9:30 PM</p>
+        <p class="mb-2">Event: <strong>{{ title }}</strong></p>
+        <p class="mb-2">Date/Time: { start_at }</p>
         <div class="mb-3">
           <label for="modalTicketQty" class="form-label">Tickets</label>
           <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">
