@@ -32,31 +32,31 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close filters"></button>
   </div>
   <div class="offcanvas-body">
-    <form class="row g-3" role="search" aria-label="Event filters (mobile)">
+    <form class="row g-3" role="search" aria-label="Event filters (mobile)" method="get"
+          action="{{ url_for('main.search_events') }}">
       <div class="col-12">
         <label for="m-search" class="form-label">Search</label>
-        <input id="m-search" type="text" class="form-control" placeholder="Search by title, host, or keyword">
+        <input id="m-search" name="q" value="{{ q or '' }}" type="text"
+              class="form-control" placeholder="Search by title, host, or keyword">
       </div>
 
       <div class="col-12">
         <label for="m-category" class="form-label">Category</label>
-        <select id="m-category" class="form-select">
-          <option selected>All categories</option>
-          <option>Tech & AI</option>
-          <option>Marketing</option>
-          <option>Finance</option>
-          <option>Health</option>
-          <option>Education</option>
+        <select id="m-category" name="category" class="form-select">
+          <option value="" {{ ''==category_selected and 'selected' or '' }}>All categories</option>
+          {% for c in ['Tech & AI','Marketing','Finance','Health','Education'] %}
+          <option value="{{ c }}" {{ c==category_selected and 'selected' or '' }}>{{ c }}</option>
+          {% endfor %}
         </select>
       </div>
 
       <div class="col-12">
         <label for="m-format" class="form-label">Format</label>
-        <select id="m-format" class="form-select">
-          <option selected>Any</option>
-          <option>In-person</option>
-          <option>Virtual</option>
-          <option>Hybrid</option>
+        <select id="m-format" name="format" class="form-select">
+          <option value="">Any</option>
+          <option value="In-person">In-person</option>
+          <option value="Virtual">Virtual</option>
+          <option value="Hybrid">Hybrid</option>
         </select>
       </div>
 
@@ -67,15 +67,19 @@
           <div class="col-6">
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input id="m-price-min" type="number" class="form-control" placeholder="Min" min="0" step="1"
-                aria-label="Minimum price in dollars">
+              <input id="m-price-min" name="price_min"
+                    value="{{ price_min if price_min is not none else '' }}"
+                    type="number" class="form-control" placeholder="Min" min="0" step="1"
+                    aria-label="Minimum price in dollars">
             </div>
           </div>
           <div class="col-6">
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input id="m-price-max" type="number" class="form-control" placeholder="Max" min="0" step="1"
-                aria-label="Maximum price in dollars">
+              <input id="m-price-max" name="price_max"
+                    value="{{ price_max if price_max is not none else '' }}"
+                    type="number" class="form-control" placeholder="Max" min="0" step="1"
+                    aria-label="Maximum price in dollars">
             </div>
           </div>
         </div>
@@ -85,65 +89,66 @@
       <!-- Sort By -->
       <div class="col-12">
         <label for="m-sort" class="form-label">Sort by</label>
-        <select id="m-sort" class="form-select" aria-label="Sort events">
-          <option selected value="relevance">Relevance</option>
-          <option value="dateSoonest">Date - Soonest first</option>
-          <option value="priceLowHigh">Price - Low to high</option>
-          <option value="priceHighLow">Price - High to low</option>
-          <option value="popularity">Popularity</option>
+        <select id="m-sort" name="sort" class="form-select" aria-label="Sort events">
+          {% for val,label in [('relevance','Relevance'),
+                              ('dateSoonest','Date - Soonest first'),
+                              ('priceLowHigh','Price - Low to high'),
+                              ('priceHighLow','Price - High to low'),
+                              ('popularity','Popularity')] %}
+          <option value="{{ val }}" {{ sort_selected==val and 'selected' or '' }}>{{ label }}</option>
+          {% endfor %}
         </select>
       </div>
 
       <div class="col-12 d-grid">
-        <button type="button" class="btn btn-outline-secondary" aria-label="Reset filters">Reset</button>
+        <button type="submit" class="btn btn-primary">Apply</button>
       </div>
     </form>
   </div>
+
 </div>
 
 <!-- Inline Filters (desktop) -->
 <section class="py-3 d-none d-md-block">
   <div class="container">
-    <form class="row g-3 align-items-end" role="search" aria-label="Event filters (desktop)">
+    <form class="row g-3 align-items-end" role="search" aria-label="Event filters (desktop)"
+      method="get" action="{{ url_for('main.search_events') }}">
       <div class="col-md-4">
         <label for="search" class="form-label">Search</label>
-        <input id="search" type="text" class="form-control" placeholder="Search by title, host, or keyword">
+        <input id="search" name="q" value="{{ q or '' }}" type="text"
+              class="form-control" placeholder="Search by title, host, or keyword">
       </div>
 
       <div class="col-md-3">
         <label for="category" class="form-label">Category</label>
-        <select id="category" class="form-select">
-          <option selected>All categories</option>
-          <option>Tech & AI</option>
-          <option>Marketing</option>
-          <option>Finance</option>
-          <option>Health</option>
-          <option>Education</option>
-          <option>Sustainability</option>
-          <option>Remote Work</option>
-          <option>Networking</option>
-          <option>Entrepreneurship</option>
+        <select id="category" name="category" class="form-select">
+          <option value="" {{ ''==category_selected and 'selected' or '' }}>All categories</option>
+          {% for c in ['Tech & AI','Marketing','Finance','Health','Education','Sustainability','Remote Work','Networking','Entrepreneurship'] %}
+          <option value="{{ c }}" {{ c==category_selected and 'selected' or '' }}>{{ c }}</option>
+          {% endfor %}
         </select>
       </div>
 
       <div class="col-md-3">
         <label for="format" class="form-label">Format</label>
-        <select id="format" class="form-select">
-          <option selected>Any</option>
-          <option>In-person</option>
-          <option>Virtual</option>
-          <option>Hybrid</option>
+        <select id="format" name="format" class="form-select">
+          <option value="">Any</option>
+          <option value="In-person">In-person</option>
+          <option value="Virtual">Virtual</option>
+          <option value="Hybrid">Hybrid</option>
         </select>
       </div>
 
       <div class="col-md-2">
         <label for="sort" class="form-label">Sort by</label>
-        <select id="sort" class="form-select" aria-label="Sort events">
-          <option selected value="relevance">Relevance</option>
-          <option value="dateSoonest">Date - Soonest first</option>
-          <option value="priceLowHigh">Price - Low to high</option>
-          <option value="priceHighLow">Price - High to low</option>
-          <option value="popularity">Popularity</option>
+        <select id="sort" name="sort" class="form-select" aria-label="Sort events">
+          {% for val,label in [('relevance','Relevance'),
+                              ('dateSoonest','Date - Soonest first'),
+                              ('priceLowHigh','Price - Low to high'),
+                              ('priceHighLow','Price - High to low'),
+                              ('popularity','Popularity')] %}
+          <option value="{{ val }}" {{ sort_selected==val and 'selected' or '' }}>{{ label }}</option>
+          {% endfor %}
         </select>
       </div>
 
@@ -151,8 +156,10 @@
         <label class="form-label" for="price-min">Min price (AUD)</label>
         <div class="input-group">
           <span class="input-group-text">$</span>
-          <input id="price-min" type="number" class="form-control" placeholder="Min" min="0" step="1"
-            aria-label="Minimum price in dollars">
+          <input id="price-min" name="price_min"
+                value="{{ price_min if price_min is not none else '' }}"
+                type="number" class="form-control" placeholder="Min" min="0" step="1"
+                aria-label="Minimum price in dollars">
         </div>
       </div>
 
@@ -160,17 +167,20 @@
         <label class="form-label" for="price-max">Max price (AUD)</label>
         <div class="input-group">
           <span class="input-group-text">$</span>
-          <input id="price-max" type="number" class="form-control" placeholder="Max" min="0" step="1"
-            aria-label="Maximum price in dollars">
+          <input id="price-max" name="price_max"
+                value="{{ price_max if price_max is not none else '' }}"
+                type="number" class="form-control" placeholder="Max" min="0" step="1"
+                aria-label="Maximum price in dollars">
         </div>
       </div>
 
       <div class="col-md-4 d-none d-md-block"></div>
 
       <div class="col-md-2 d-grid">
-        <button type="button" class="btn btn-outline-secondary" aria-label="Reset filters">Reset</button>
+        <button type="submit" class="btn btn-primary">Apply</button>
       </div>
     </form>
+
   </div>
 </section>
 
@@ -207,241 +217,49 @@
 
   <!-- Events Grid -->
   <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4" id="events-grid">
-
-    <!-- Event 1 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/founders-breakfast.jpg" class="card-img-top"
-          alt="Founders’ Breakfast: AI in Practice, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">Tech &amp; AI</span>
-          </div>
-          <h2 class="h5 card-title">Founders’ Breakfast: AI in Practice</h2>
-          <p class="card-text text-muted mb-2">Fri, 19 Sep • 7:30–9:00 AM • South Brisbane (In-person)</p>
-          <p class="card-text flex-grow-1">Real-world AI adoption and careers. Talks + table discussions.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2">
-              <a class="btn btn-primary" href="{{ url_for('main.event') }}"
-                aria-label="View details for Founders’ Breakfast">View
-                details</a>
-              <a class="btn btn-outline-primary" href="{{ url_for('main.event') }}"
-                aria-label="Book tickets for Founders’ Breakfast">Book</a>
+    {% if results and results|length > 0 %}
+      {% for r in results %}
+        {% set e = r.event %}
+        <div class="col">
+          <article class="card h-100">
+            <img src="{{ url_for('static', filename='img/founders-breakfast.jpg') }}" class="card-img-top"
+                alt="{{ e.title }} cover image">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge rounded-pill badge-open">Open</span>
+                <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
+              </div>
+              <h2 class="h5 card-title">{{ e.title }}</h2>
+              <p class="card-text text-muted mb-2">
+                {% if e.start_at %}{{ e.start_at.strftime('%a, %d %b • %I:%M %p') }}{% endif %}
+                {% if e.location_text %} • {{ e.location_text }}{% endif %}
+              </p>
+              <p class="card-text flex-grow-1">
+                {{ (e.description or '')[:140] }}{% if e.description and e.description|length>140 %}…{% endif %}
+              </p>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <div class="d-flex gap-2">
+                  <a class="btn btn-primary" href="{{ url_for('main.event') }}">View details</a>
+                  <a class="btn btn-outline-primary" href="{{ url_for('main.event') }}">Book</a>
+                </div>
+                <span class="fw-semibold text-primary">
+                  {% if r.min_price is not none %}${{ '%.0f'|format(r.min_price) }}{% else %}FREE{% endif %}
+                </span>
+              </div>
             </div>
-            <span class="fw-semibold text-primary">$35</span>
+          </article>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="card" id="home-empty">
+          <div class="card-body text-center text-muted">
+            <p class="mb-2">No events match your filters.</p>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Clear filters</a>
           </div>
         </div>
-      </article>
-    </div>
-
-    <!-- Event 2 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/women-tech.jpg" class="card-img-top" alt="Women in Tech: Leadership Panel, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-soldout">Sold Out</span>
-            <span class="badge text-bg-light">Technology</span>
-          </div>
-          <h2 class="h5 card-title">Women in Tech: Leadership Panel</h2>
-          <p class="card-text text-muted mb-2">Thu, 18 Sept • 6:00–8:00 PM • Melbourne Convention Centre (In-person)
-          </p>
-          <p class="card-text flex-grow-1">Female leaders in technology share career journeys, lessons, and strategies
-            for breaking barriers.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2">
-              <button class="btn btn-secondary disabled" aria-disabled="true"
-                aria-label="Booking unavailable: event sold out">Book</button>
-              <a class="btn btn-outline-secondary" href="event.html"
-                aria-label="View details for Women in Tech: Leadership Panel">Details</a>
-            </div>
-            <span class="fw-semibold text-primary">$25</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 3 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/growth-panel.jpg" class="card-img-top"
-          alt="Growth Panel: Content that Converts, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">Marketing</span>
-          </div>
-          <h2 class="h5 card-title">Growth Panel: Content that Converts</h2>
-          <p class="card-text text-muted mb-2">Wed, 24 Sep • 6:00–7:15 PM • Virtual (Zoom)</p>
-          <p class="card-text flex-grow-1">CMOs share playbooks for audience growth.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-primary" href="event.html"
-                aria-label="View details for Growth Panel: Content that Converts">View details</a>
-              <a class="btn btn-outline-primary" href="event.html"
-                aria-label="Book tickets for Growth Panel: Content that Converts">Book</a>
-            </div>
-            <span class="fw-semibold text-primary">FREE</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 4 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/public-speaking.jpg" class="card-img-top"
-          alt="Workshop: Beginner Public Speaking, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-cancelled">Cancelled</span>
-            <span class="badge text-bg-light">Education</span>
-          </div>
-          <h2 class="h5 card-title">Workshop: Beginner Public Speaking</h2>
-          <p class="card-text text-muted mb-2">Sat, 4 Oct • 10:00 AM–12:00 PM • Kelvin Grove</p>
-          <p class="card-text flex-grow-1">Structure, delivery, and confidence with practice.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <button class="btn btn-secondary disabled" aria-disabled="true"
-                aria-label="Booking unavailable: event cancelled">Book</button>
-              <a class="btn btn-outline-secondary" href="event.html"
-                aria-label="View details for Beginner Public Speaking workshop">Details</a>
-            </div>
-            <span class="fw-semibold text-primary">$5</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 5 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/business-mixer.jpg" class="card-img-top" alt="Sustainable Business Mixer, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">Sustainability</span>
-          </div>
-          <h2 class="h5 card-title">Sustainable Business Mixer</h2>
-          <p class="card-text text-muted mb-2">Wed, 24 Sept • 5:30–7:30 PM • Online (Wellington, NZ)</p>
-          <p class="card-text flex-grow-1">Networking with professionals in renewable energy, waste management, and
-            eco-friendly startups.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-primary" href="event.html" aria-label="View details for Sustainable Business Mixer">View
-                details</a>
-              <a class="btn btn-outline-primary" href="event.html"
-                aria-label="Book tickets for Sustainable Business Mixer">Book</a>
-            </div>
-            <span class="fw-semibold text-primary">$25</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 6 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/finance-meetup.jpg" class="card-img-top" alt="After-Work Finance Meetup, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-inactive">Inactive</span>
-            <span class="badge text-bg-light">Finance</span>
-          </div>
-          <h2 class="h5 card-title">After-Work Finance Meetup</h2>
-          <p class="card-text text-muted mb-2">Thu, 21 Aug • 5:30–7:00 PM • South Bank</p>
-          <p class="card-text flex-grow-1">Peer networking for analysts and planners.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-outline-secondary" href="event.html"
-                aria-label="View details for After-Work Finance Meetup">Details</a>
-            </div>
-            <span class="fw-semibold text-primary">$40</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 7 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/remote-work.jpg" class="card-img-top" alt="Remote Work Networking Café, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">Remote Work</span>
-          </div>
-          <h2 class="h5 card-title">Remote Work Networking Café</h2>
-          <p class="card-text text-muted mb-2">Tue, 14 Oct • 12:00–1:00 PM • Online (Singapore)</p>
-          <p class="card-text flex-grow-1">Casual lunchtime networking in a virtual café. Share tips, meet peers, and
-            explore collaboration.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-primary" href="event.html"
-                aria-label="View details for Remote Work Networking Café">View details</a>
-              <a class="btn btn-outline-primary" href="event.html"
-                aria-label="Book tickets for Remote Work Networking Café">Book</a>
-            </div>
-            <span class="fw-semibold text-primary">FREE</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 8 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/social-night.jpg" class="card-img-top"
-          alt="Young Professionals Social Night, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">Networking</span>
-          </div>
-          <h2 class="h5 card-title">Young Professionals Social Night</h2>
-          <p class="card-text text-muted mb-2">Sat, 25 Oct • 7:00–11:00 PM • The Aviary Rooftop, Perth (In-person)</p>
-          <p class="card-text flex-grow-1">Relaxed evening with live music, canapés, and networking across industries.
-          </p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-primary" href="event.html"
-                aria-label="View details for Young Professionals Social Night">View details</a>
-              <a class="btn btn-outline-primary" href="event.html"
-                aria-label="Book tickets for Young Professionals Social Night">Book</a>
-            </div>
-            <span class="fw-semibold text-primary">$50</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <!-- Event 9 -->
-    <div class="col">
-      <article class="card h-100">
-        <img src="../static/img/pitch-night.jpg" class="card-img-top" alt="Startups & Pitch Night, cover image">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-soldout">Sold Out</span>
-            <span class="badge text-bg-light">Entrepreneurship</span>
-          </div>
-          <h2 class="h5 card-title">Startups & Pitch Night</h2>
-          <p class="card-text text-muted mb-2">Fri, 3 Oct • 6:00–9:00 PM • The Precinct, Brisbane (In-person)</p>
-          <p class="card-text flex-grow-1">Early-stage founders pitch ideas to mentors and investors. Includes
-            networking and refreshments.</p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div class="d-flex gap-2 mt-auto">
-              <button class="btn btn-secondary disabled" aria-disabled="true"
-                aria-label="Booking unavailable: event sold out">Book</button>
-              <a class="btn btn-outline-secondary" href="event.html"
-                aria-label="View details for Growth Panel">Details</a>
-            </div>
-            <span class="fw-semibold text-primary">$80</span>
-          </div>
-        </div>
-      </article>
-    </div>
-
+      </div>
+    {% endif %}
   </div>
 
   <!-- Pagination -->
