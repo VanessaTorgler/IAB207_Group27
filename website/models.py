@@ -26,7 +26,7 @@ class User(db.Model, UserMixin):
 class Event(db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id')) #fix once users exist
     title = db.Column(db.String(160))
     description = db.Column(db.Text)
     event_type = db.Column(db.String(40))
@@ -34,6 +34,7 @@ class Event(db.Model):
     start_at = db.Column(db.DateTime)
     end_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.now())
+    rsvp_closes = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
     deleted_at = db.Column(db.DateTime, nullable=True)
     #location_type = db.Column(db.String(16))
