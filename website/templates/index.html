@@ -239,8 +239,8 @@
               </p>
               <div class="d-flex justify-content-between align-items-center mt-auto">
                 <div class="d-flex gap-2">
-                  <a class="btn btn-primary" href="{{ url_for('main.event') }}">View details</a>
-                  <a class="btn btn-outline-primary" href="{{ url_for('main.event') }}">Book</a>
+                  <a class="btn btn-primary" href="{{ url_for('main.event_detail', event_id=e.id) }}">View details</a>
+                  <a class="btn btn-outline-primary" href="{{ url_for('main.event_detail', event_id=e.id) }}">Book</a>
                 </div>
                 <span class="fw-semibold text-primary">
                   {% if r.min_price is not none %}${{ '%.0f'|format(r.min_price) }}{% else %}FREE{% endif %}
