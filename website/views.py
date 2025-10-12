@@ -101,16 +101,16 @@ def createUpdate():
         event = Event(
             title=form.title.data,
             description=form.description.data,
-            event_type=form.category.data,         # category drives filtering
+            event_type=form.format.data,
             event_timezone=form.timezone.data,
             start_at=start_dt,
             end_at=end_dt,
-            rsvp_closes=form.rsvp_closes.data,     # keep teammate’s field
+            rsvp_closes=form.rsvp_closes.data,
             location_text=form.location.data,
             capacity=int(form.capacity.data)
         )
         db.session.add(event)
-        db.session.flush()  # ensure event.id exists
+        db.session.flush() 
 
         # Image
         event_img = Event_Image(
@@ -146,29 +146,46 @@ def createUpdate():
 
 @main_bp.route('/search')
 def search_events():
-    """Filters: q, category, price_min, price_max, sort"""
-    q_text = (request.args.get('q') or '').strip()
-    category = (request.args.get('category') or '').strip()
-    price_min = request.args.get('price_min', type=float)
-    price_max = request.args.get('price_max', type=float)
-    sort = (request.args.get('sort') or 'relevance').strip()
+    """
+    Supports:
+      q           : text search (title/description)
+      category    : Tag.name (e.g., 'Tech & AI', 'Marketing', ...)
+      format      : Event.event_type ('In-person' | 'Virtual' | 'Hybrid')
+      price_min   : minimum ticket price
+      price_max   : maximum ticket price
+      sort        : relevance | dateSoonest | priceLowHigh | priceHighLow | popularity
+    """
+    q_text     = (request.args.get('q') or '').strip()
+    category   = (request.args.get('category') or '').strip()
+    fmt        = (request.args.get('format') or '').strip()
+    price_min  = request.args.get('price_min', type=float)
+    price_max  = request.args.get('price_max', type=float)
+    sort       = (request.args.get('sort') or 'relevance').strip()
 
-    qry = (
-        db.session.query(
-            Event,
-            func.min(TicketType.price).label('min_price'),
-            func.count(Booking.booking_id).label('popularity')
-        )
-        .outerjoin(TicketType, TicketType.event_id == Event.id)
-        .outerjoin(Booking, Booking.event_id == Event.id)
-        .group_by(Event.id)
-    )
+    qry = (db.session.query(
+                Event,
+                func.min(TicketType.price).label('min_price'),
+                func.count(Booking.booking_id).label('popularity')
+           )
+           .outerjoin(TicketType, TicketType.event_id == Event.id)
+           .outerjoin(Booking, Booking.event_id == Event.id)
+           # join tags so category can match Tag.name
+           .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
+           .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
+           .group_by(Event.id))
 
     if q_text:
         ilike = f"%{q_text}%"
         qry = qry.filter(or_(Event.title.ilike(ilike), Event.description.ilike(ilike)))
+
+    # Category ->
     if category:
-        qry = qry.filter(Event.event_type == category)
+        qry = qry.filter(Tag.name == category)
+
+    # Format 
+    if fmt:
+        qry = qry.filter(Event.event_type == fmt)
+
     if price_min is not None:
         qry = qry.having(func.coalesce(func.min(TicketType.price), 0) >= price_min)
     if price_max is not None:
@@ -182,7 +199,7 @@ def search_events():
         qry = qry.order_by(func.coalesce(func.min(TicketType.price), 0).desc())
     elif sort == 'popularity':
         qry = qry.order_by(func.count(Booking.booking_id).desc(), Event.start_at.asc())
-    else:  # relevance or default
+    else:  # relevance
         qry = qry.order_by(Event.start_at.asc().nulls_last())
 
     rows = qry.all()
@@ -192,6 +209,10 @@ def search_events():
         'index.html',
         active_page='home',
         results=results,
-        q=q_text, category_selected=category,
-        price_min=price_min, price_max=price_max, sort_selected=sort
+        q=q_text,
+        category_selected=category,
+        price_min=price_min,
+        price_max=price_max,
+        sort_selected=sort,
+        fmt_selected=fmt,
     )

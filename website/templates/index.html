@@ -53,11 +53,12 @@
       <div class="col-12">
         <label for="m-format" class="form-label">Format</label>
         <select id="m-format" name="format" class="form-select">
-          <option value="">Any</option>
-          <option value="In-person">In-person</option>
-          <option value="Virtual">Virtual</option>
-          <option value="Hybrid">Hybrid</option>
+          <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any</option>
+          {% for f in ['In-person','Virtual','Hybrid'] %}
+          <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
+          {% endfor %}
         </select>
+
       </div>
 
       <!-- Price range -->
@@ -131,12 +132,13 @@
 
       <div class="col-md-3">
         <label for="format" class="form-label">Format</label>
-        <select id="format" name="format" class="form-select">
-          <option value="">Any</option>
-          <option value="In-person">In-person</option>
-          <option value="Virtual">Virtual</option>
-          <option value="Hybrid">Hybrid</option>
+        <select id="m-format" name="format" class="form-select">
+          <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any</option>
+          {% for f in ['In-person','Virtual','Hybrid'] %}
+          <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
+          {% endfor %}
         </select>
+
       </div>
 
       <div class="col-md-2">
