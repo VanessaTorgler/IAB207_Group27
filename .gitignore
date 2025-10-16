@@ -32,6 +32,7 @@ env/
 instance/
 uploads/
 media/
+migrations/
 
 # IDE/editor
 .vscode/

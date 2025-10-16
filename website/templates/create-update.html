@@ -15,7 +15,7 @@
 {% block content %}
 
 <main class="container py-4">
-  <form id="eventForm" class="row g-4" method="POST">
+  <form id="eventForm" class="row g-4" method="POST" enctype="multipart/form-data">
     {{ form.csrf_token }}
     {{ form.hidden_tag() }}
     <!-- Left column -->
