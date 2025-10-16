@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, current_app, redirect, url_for
+from flask import Blueprint, render_template, session, request, current_app, redirect, url_for, flash
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
@@ -238,6 +238,10 @@ def createUpdate():
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
         form = CreateEventForm(formdata=None)
+        flash(f"Successfully created event. You can <a href='{url_for('main.createUpdate')}' class='alert-link'>host another event</a> "
+        f"or <a href='{url_for('main.event', event_id=event.id)}' class='alert-link'>visit it</a>.",
+        "success")
+        return redirect(url_for('main.index'))
 
     print(form.errors)
     return render_template('create-update.html', active_page='create-update', form=form)
