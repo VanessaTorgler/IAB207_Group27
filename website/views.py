@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request
+from flask import Blueprint, render_template, session, request, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_
 from datetime import datetime
@@ -73,8 +73,10 @@ def event_detail(event_id):
     )
 
 @main_bp.route('/bookinghistory')
+@login_required
 def bookingHistory():
-    return render_template('history.html', active_page='bookinghistory')
+    # Keep the original URL but serve the dynamic booking history from the new blueprint
+    return redirect(url_for('bookings.booking_history'))
 
 def checkStatus(event_id):
     # Cancelled?
