@@ -175,7 +175,7 @@ def checkStatus(event_id):
     return "Open"
 
 @main_bp.route('/create-update', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def createUpdate():
     form = CreateEventForm()
     if form.validate_on_submit():
