@@ -3,6 +3,8 @@ from flask_login import login_required, current_user
 from .forms import CreateEventForm, CommentForm
 from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
 from datetime import datetime
+from werkzeug.utils import secure_filename
+import os
 from . import db
 
 main_bp = Blueprint('main', __name__)
@@ -11,6 +13,21 @@ main_bp = Blueprint('main', __name__)
 def index():
     session['event'] = None
     return render_template('index.html', active_page='home')  
+
+def check_upload_file(form):
+  # get file data from form  
+  fp = form.event_image.data
+  filename = fp.filename
+  # get the current path of the module file… store image file relative to this path  
+  BASE_PATH = os.path.dirname(__file__)
+  # upload file location – directory of this file/static/img
+  upload_path = os.path.join(BASE_PATH, 'static/img', secure_filename(filename))
+  # store relative path in DB as image location in HTML is relative
+  db_upload_path = '/static/img/' + secure_filename(filename)
+  # save the file and return the db upload path  
+  fp.save(upload_path)
+  return db_upload_path
+
 @main_bp.route('/event/<int:event_id>', methods=['GET', 'POST'])
 def event(event_id):
     session['event'] = event_id
@@ -58,6 +75,7 @@ def checkStatus(event_id):
 def createUpdate():
     form = CreateEventForm() 
     if form.validate_on_submit():
+        db_file_path = check_upload_file(form)
         print("Form Submitted!")
         print(form.title.data, form.description.data, form.category.data, form.format.data, form.date.data, form.start_time.data, form.end_time.data, form.timezone.data, form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data, form.ticket_price.data, form.rsvp_closes.data, form.host_name.data, form.host_contact.data)
         event = Event(
@@ -75,7 +93,7 @@ def createUpdate():
         db.session.flush()
         event_img = Event_Image(
             event_id=event.id,
-            url=form.event_image.data,
+            url=db_file_path,
             alt_text=form.image_alt_text.data
         )
         tagfind = db.session.execute(db.select(Tag).where(Tag.name==form.category.data)).scalar_one()
@@ -102,4 +120,4 @@ def createUpdate():
         form = CreateEventForm(formdata=None) 
 
     print(form.errors)
-    return render_template('create-update.html', active_page='create-update', form=form)
+    return render_template('index.html', active_page='home', form=form, created_event=True)
