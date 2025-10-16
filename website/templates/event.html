@@ -21,8 +21,7 @@
   <div class="container">
     <div class="row g-4 align-items-center py-4">
       <div class="col-12 col-lg-7">
-        <img src="../static/img/{{image}}" class="img-fluid rounded"
-          alt="Cover image for Founders’ Breakfast: AI in Practice">
+        <img src="{{image}}" class="img-fluid rounded" alt="Cover image for Founders’ Breakfast: AI in Practice">
       </div>
       <div class="col-12 col-lg-5">
         {% if status == 'Open' %}
@@ -51,11 +50,6 @@
           <dt class="col-4 col-sm-3">Price</dt>
           <dd class="col-8 col-sm-9">{{ price }}</dd>
         </dl>
-
-        <p class="mb-3">
-          Lightning talks from founders implementing AI now, with a light dinner in between.
-          Bring questions—this session is practical and conversational.
-        </p>
 
         <!-- Booking Path B: Modal confirmation -->
         <div class="mt-2">
@@ -104,14 +98,8 @@
         <div class="card-header fw-semibold">About this event</div>
         <div class="card-body">
           <p class="mb-3">
-            We’ll unpack real case studies (workflow automation, customer support, analytics)
-            and discuss pathways into AI-adjacent roles. Light dinner provided.
+            {{ description }}
           </p>
-          <ul class="mb-0">
-            <li>Doors open: 6:15 PM</li>
-            <li>Talks: 6:30–7:50 PM, 8:10-9:30 PM</li>
-            <li>Intermission: 7:50–8:10 PM</li>
-          </ul>
         </div>
       </div>
 
@@ -176,8 +164,6 @@
         <div class="card-header fw-semibold">Quick facts</div>
         <div class="card-body small">
           <ul class="list-unstyled mb-0">
-            <li class="mb-2"><strong>Status:</strong> <span class="badge rounded-pill badge-open">Open</span></li>
-            <li class="mb-2"><strong>Remaining seats:</strong> 12</li>
             <li class="mb-2"><strong>Dress code:</strong> Casual</li>
             <li class="mb-2"><strong>Accessibility:</strong> Wheelchair accessible</li>
             <li class="mb-2"><strong>Contact:</strong> support@foundersbreakfast.com</li>

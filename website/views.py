@@ -142,6 +142,7 @@ def event(event_id):
         db.select(Event_Image.url).where(Event_Image.event_id==event_id)
     ).scalar_one_or_none()
     status = checkStatus(event_id)
+    #hostEmail = db.session.execute(db.select(User.email).
     return render_template('event.html', event_id=event_id, title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity, host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event')
 
 @main_bp.route('/bookinghistory')
