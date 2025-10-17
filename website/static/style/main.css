@@ -206,3 +206,10 @@ aside .card-body li strong { display: inline-block; width: 110px; }
 }
 
 .sidebar-sticky { position: sticky; top: 1rem; }
+
+.table .truncate-col {
+  max-width: 340px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -22,7 +22,6 @@
           <input type="hidden" name="when" value="{{ when_selected }}">
           <input type="hidden" name="format" value="{{ fmt_selected }}">
           <label for="sort" class="small text-muted mb-0">Sort</label>
-          <!-- prettier-ignore -->
           <select id="sort"
                   name="sort"
                   class="form-select form-select-sm"
@@ -91,12 +90,13 @@
               <table class="table align-middle">
                 <thead>
                   <tr>
-                    <th style="width:72px;">Image</th>
                     <th>Title</th>
-                    <th style="width:120px;">Status</th>
-                    <th style="width:140px;">Tickets</th>
-                    <th style="width:120px;">Price</th>
-                    <th style="width:180px;">Start</th>
+                    <th style="width:140px;">Category</th>
+                    <th style="width:110px;">Status</th>
+                    <th class="text-nowrap" style="width:90px;">Price</th>
+                    <th class="text-nowrap" style="width:110px;">Sold</th>
+                    <th style="width:170px;">Start</th>
+                    <th class="d-none d-lg-table-cell" style="width:170px;">RSVP closes</th>
                     <th style="width:120px;">Actions</th>
                   </tr>
                 </thead>
@@ -104,38 +104,44 @@
                   {% for e in events %}
                     {% set cover = e.images[0].url if e.images else url_for('static', filename='img/founders-breakfast.jpg') %}
                     <tr>
-                      <td>
-                        <img src="{{ cover }}"
-                             alt=""
-                             class="img-fluid rounded"
-                             style="width:64px;
-                                    height:40px;
-                                    object-fit:cover">
+                      <td class="fw-semibold">
+                        <div class="truncate-col">{{ e.title }}</div>
                       </td>
-                      <td class="fw-semibold">{{ e.title }}</td>
+
+                      <td class="small">{{ tags_map.get(e.id, "—") }}</td>
+
                       {% set m = metrics.get(e.id) %}
                       <td>
-                        <span class="badge rounded-pill {% if m.status == 'Open' %}badge-open {% elif m.status == 'Cancelled' %}badge-cancelled {% elif m.status == 'Inactive' %}badge-inactive {% elif m.status == 'Sold Out' %}badge-soldout {% else %}text-bg-light{% endif %}">
+                        <span class="badge rounded-pill
+                          {% if m.status == 'Open' %}badge-open
+                          {% elif m.status == 'Cancelled' %}badge-cancelled
+                          {% elif m.status == 'Inactive' %}badge-inactive
+                          {% elif m.status == 'Sold Out' %}badge-soldout
+                          {% else %}text-bg-light{% endif %}">
                           {{ m.status }}
                         </span>
                       </td>
-                      <td class="small">{{ m.sold }}/{{ e.capacity if e.capacity is not none else '—' }}</td>
-                      <td class="fw-semibold">
-                        {% if m.min_price > 0 %}
-                          ${{ '%.2f'|format(m.min_price) }}
-                        {% else %}
-                          FREE
-                        {% endif %}
+
+                      <td class="fw-semibold text-nowrap">
+                        {% if m.min_price > 0 %}${{ '%.2f'|format(m.min_price) }}{% else %}FREE{% endif %}
                       </td>
+
+                      <td class="text-nowrap small">
+                        {{ m.sold }}/{{ e.capacity if e.capacity is not none else '—' }}
+                      </td>
+
                       <td class="text-muted small">
-                        {% if e.start_at %}
-                          {{ e.start_at.strftime("%a, %d %b • %I:%M %p") }}
-                        {% endif %}
+                        {% if e.start_at %}{{ e.start_at.strftime('%d/%m/%y %I:%M %p') }}{% else %}—{% endif %}
                       </td>
+
+                      <td class="text-muted small d-none d-lg-table-cell">
+                        {% if e.rsvp_closes %}{{ e.rsvp_closes.strftime('%d/%m/%y %I:%M %p') }}{% else %}—{% endif %}
+                      </td>
+
                       <td>
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="{{ url_for('main.event', event_id=e.id) }}">View</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.event', event_id=e.id) }}">View</a>
                       </td>
+
                     </tr>
                   {% endfor %}
                 </tbody>

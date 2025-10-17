@@ -373,6 +373,8 @@ def my_events():
 
     events = [e for (e, _, _) in rows]
     metrics = {}
+    tags_map: dict[int, str] = {}
+    
     for e, mp, sold in rows:
         status = "Open"
         if e.cancelled:
@@ -395,6 +397,18 @@ def my_events():
             "sold": int(sold or 0),
             "status": status,
         }
+        # If user has created events, build tag names
+        if events:
+            event_ids = [e.id for e in events]
+            tag_rows = (
+                db.session.query(Event_Tag.event_id, Tag.name)
+                .join(Tag, Tag.id == Event_Tag.tag_id)
+                .filter(Event_Tag.event_id.in_(event_ids))
+                .all()
+            )
+            # If multiple tags per event, pick the first
+            for eid, name in tag_rows:
+                tags_map.setdefault(eid, name)
 
     return render_template(
         "my-events.html",
@@ -405,4 +419,5 @@ def my_events():
         fmt_selected=fmt,
         sort_selected=sort,
         metrics=metrics,
+        tags_map=tags_map,
     )
