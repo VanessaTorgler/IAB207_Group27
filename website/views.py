@@ -292,7 +292,7 @@ def search_events():
     if category:
         qry = qry.filter(Tag.name == category)
 
-    # Format 
+    # Format
     if fmt:
         qry = qry.filter(Event.event_type == fmt)
 
@@ -327,48 +327,82 @@ def search_events():
         fmt_selected=fmt,
     )
 
-@main_bp.route('/my-events')
+
+@main_bp.route("/my-events")
 @login_required
 def my_events():
     # Grab events where the current user is the host
-    view = (request.args.get('view') or 'grid').strip()
-    when_ = (request.args.get('when') or 'upcoming').strip()
-    fmt = (request.args.get('format') or '').strip()
-    sort = (request.args.get('sort') or 'upcoming').strip()
-    
+    view = (request.args.get("view") or "grid").strip()
+    when_ = (request.args.get("when") or "upcoming").strip()
+    fmt = (request.args.get("format") or "").strip()
+    sort = (request.args.get("sort") or "upcoming").strip()
+
     qry = (
-        db.session.query(Event)
+        db.session.query(
+            Event,
+            func.min(cast(TicketType.price, Float)).label("min_price"),
+            func.count(Booking.booking_id).label("sold_count"),
+        )
+        .outerjoin(TicketType, TicketType.event_id == Event.id)
+        .outerjoin(Booking, Booking.event_id == Event.id)
         .filter(Event.host_user_id == current_user.id)
+        .group_by(Event.id)
     )
-    
+
     now_utc = datetime.now(timezone.utc)
 
-    if when_ == 'upcoming':
+    if when_ == "upcoming":
         qry = qry.filter((Event.start_at == None) | (Event.start_at >= now_utc))
-    elif when_ == 'past':
+    elif when_ == "past":
         qry = qry.filter((Event.end_at != None) & (Event.end_at < now_utc))
-        
+
     if fmt:
         qry = qry.filter(Event.event_type == fmt)
-    
+
     # Sorting
-    if sort == 'upcoming':
+    if sort == "upcoming":
         qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
-    elif sort == 'created':
+    elif sort == "created":
         qry = qry.order_by(Event.created_at.desc())
-    elif sort == 'title':
+    elif sort == "title":
         qry = qry.order_by(func.lower(Event.title).asc())
     else:
         qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
-    
-    events = qry.all()
-    
+
+    rows = qry.all()
+
+    events = [e for (e, _, _) in rows]
+    metrics = {}
+    for e, mp, sold in rows:
+        status = "Open"
+        if e.cancelled:
+            status = "Cancelled"
+        else:
+            end_at = e.end_at
+            if end_at is not None:
+                if end_at.tzinfo is None:
+                    end_at = end_at.replace(tzinfo=timezone.utc)
+                if end_at <= now_utc:
+                    status = "Inactive"
+            if (
+                status == "Open"
+                and e.capacity is not None
+                and (sold or 0) >= e.capacity
+            ):
+                status = "Sold Out"
+        metrics[e.id] = {
+            "min_price": float(mp or 0.0),
+            "sold": int(sold or 0),
+            "status": status,
+        }
+
     return render_template(
-        'my-events.html', 
-        active_page='my-events',
+        "my-events.html",
+        active_page="my-events",
         events=events,
         view=view,
         when_selected=when_,
         fmt_selected=fmt,
         sort_selected=sort,
+        metrics=metrics,
     )

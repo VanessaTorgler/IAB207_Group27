@@ -41,7 +41,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # initialise db with flask app
     db.init_app(app)
-    # import all models before starting the Flask-Migrate
+    # import all models
     from . import models
     #create the db tables and add tags. uncomment if you make changes to models.py
     '''with app.app_context():
