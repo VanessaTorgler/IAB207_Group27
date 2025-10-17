@@ -5,14 +5,7 @@
 {% endblock %}
 
 {% block header %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-  {{ message|safe }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-{% endfor %}
-{% endwith %}
+
 <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
   <div>
     <h1 class="h3 mb-1">Discover Professional Networking Events</h1>
