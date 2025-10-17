@@ -46,7 +46,7 @@ class User(TimestampMixin, db.Model, UserMixin):
 class Event(TimestampMixin, db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), index=True) #fix once users exist
+    host_user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), index=True, nullable=False)
     title = db.Column(db.String(160), nullable=False, index=True)
     description = db.Column(db.Text)
     event_type = db.Column(db.String(40))
