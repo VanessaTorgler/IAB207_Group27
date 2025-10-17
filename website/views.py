@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, request, current_app, redirect, url_for, flash
+from flask import Blueprint, render_template, session, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
@@ -109,13 +109,13 @@ def check_upload_file(form):
     # get the current path of the module file… store image file relative to this path  
     BASE_PATH = os.path.dirname(__file__)
     # upload file location – directory of this file/static/img
-    upload_dir = os.path.join(BASE_PATH, 'static', 'img')
+    upload_dir = os.path.join(BASE_PATH, 'static', 'uploads')
     os.makedirs(upload_dir, exist_ok=True)
     # store relative path in DB as image location in HTML is relative
     upload_path = os.path.join(upload_dir, unique_name)
     # save the file and return the db upload path  
     fp.save(upload_path)
-    return f"/static/img/{unique_name}"
+    return f"/static/uploads/{unique_name}"
 
 @main_bp.route('/event/<int:event_id>', methods=['GET', 'POST'])
 def event(event_id):
@@ -146,9 +146,10 @@ def event(event_id):
     return render_template('event.html', event_id=event_id, title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity, host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event')
 
 @main_bp.route('/bookinghistory')
-#@login_required
+@login_required
 def bookingHistory():
-    return render_template('history.html', active_page='bookinghistory')
+    # Keep the original URL but serve the dynamic booking history from the new blueprint
+    return redirect(url_for('bookings.booking_history'))
 
 def checkStatus(event_id):
     #if it's cancelled, return "Cancelled
@@ -175,7 +176,7 @@ def checkStatus(event_id):
     return "Open"
 
 @main_bp.route('/create-update', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def createUpdate():
     form = CreateEventForm()
     if form.validate_on_submit():
@@ -246,3 +247,76 @@ def createUpdate():
 
     print(form.errors)
     return render_template('create-update.html', active_page='create-update', form=form)
+
+@main_bp.route('/search')
+def search_events():
+    """
+    Supports:
+      q           : text search (title/description)
+      category    : Tag.name (e.g., 'Tech & AI', 'Marketing', ...)
+      format      : Event.event_type ('In-person' | 'Virtual' | 'Hybrid')
+      price_min   : minimum ticket price
+      price_max   : maximum ticket price
+      sort        : relevance | dateSoonest | priceLowHigh | priceHighLow | popularity
+    """
+    q_text     = (request.args.get('q') or '').strip()
+    category   = (request.args.get('category') or '').strip()
+    fmt        = (request.args.get('format') or '').strip()
+    price_min  = request.args.get('price_min', type=float)
+    price_max  = request.args.get('price_max', type=float)
+    sort       = (request.args.get('sort') or 'relevance').strip()
+
+    qry = (db.session.query(
+                Event,
+                func.min(TicketType.price).label('min_price'),
+                func.count(Booking.booking_id).label('popularity')
+           )
+           .outerjoin(TicketType, TicketType.event_id == Event.id)
+           .outerjoin(Booking, Booking.event_id == Event.id)
+           # join tags so category can match Tag.name
+           .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
+           .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
+           .group_by(Event.id))
+
+    if q_text:
+        ilike = f"%{q_text}%"
+        qry = qry.filter(or_(Event.title.ilike(ilike), Event.description.ilike(ilike)))
+
+    # Category ->
+    if category:
+        qry = qry.filter(Tag.name == category)
+
+    # Format 
+    if fmt:
+        qry = qry.filter(Event.event_type == fmt)
+
+    if price_min is not None:
+        qry = qry.having(func.coalesce(func.min(TicketType.price), 0) >= price_min)
+    if price_max is not None:
+        qry = qry.having(func.coalesce(func.min(TicketType.price), 1_000_000) <= price_max)
+
+    if sort == 'dateSoonest':
+        qry = qry.order_by(Event.start_at.asc().nulls_last())
+    elif sort == 'priceLowHigh':
+        qry = qry.order_by(func.coalesce(func.min(TicketType.price), 0).asc())
+    elif sort == 'priceHighLow':
+        qry = qry.order_by(func.coalesce(func.min(TicketType.price), 0).desc())
+    elif sort == 'popularity':
+        qry = qry.order_by(func.count(Booking.booking_id).desc(), Event.start_at.asc())
+    else:  # relevance
+        qry = qry.order_by(Event.start_at.asc().nulls_last())
+
+    rows = qry.all()
+    results = [{'event': e, 'min_price': mp, 'popularity': pop} for (e, mp, pop) in rows]
+
+    return render_template(
+        'index.html',
+        active_page='home',
+        results=results,
+        q=q_text,
+        category_selected=category,
+        price_min=price_min,
+        price_max=price_max,
+        sort_selected=sort,
+        fmt_selected=fmt,
+    )
