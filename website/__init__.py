@@ -70,7 +70,7 @@ def create_app():
           # if it doesn't, add it
           if check_existing == None:
               if app.debug == True:
-                  print("Tag added: " + str(check_existing))
+                  print("Tag added: " + str(each))
               #add_tag = Tag(name = each)
               db.session.add(each)
 
