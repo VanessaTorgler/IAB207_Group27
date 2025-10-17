@@ -170,7 +170,6 @@ aside .card-body li strong { display: inline-block; width: 110px; }
 @media (min-width: 992px) { #home-loading .skeleton-img { height: 200px; } }
 
 /* Footer / payment logos (kept minimal) */
-/* Already covered by .payment-logo above */
 
 /* CSS-only modal (for Schedule) */
 .modal-css {
@@ -205,3 +204,5 @@ aside .card-body li strong { display: inline-block; width: 110px; }
 @media (min-width: 768px) {
   .empty-state { min-height: 40vh; }
 }
+
+.sidebar-sticky { position: sticky; top: 1rem; }

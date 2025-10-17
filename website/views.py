@@ -331,10 +331,44 @@ def search_events():
 @login_required
 def my_events():
     # Grab events where the current user is the host
-    events = (
+    view = (request.args.get('view') or 'grid').strip()
+    when_ = (request.args.get('when') or 'upcoming').strip()
+    fmt = (request.args.get('format') or '').strip()
+    sort = (request.args.get('sort') or 'upcoming').strip()
+    
+    qry = (
         db.session.query(Event)
         .filter(Event.host_user_id == current_user.id)
-        .order_by(Event.created_at.desc())
-        .all()
     )
-    return render_template('my-events.html', active_page='my-events', events=events)
+    
+    now_utc = datetime.now(timezone.utc)
+
+    if when_ == 'upcoming':
+        qry = qry.filter((Event.start_at == None) | (Event.start_at >= now_utc))
+    elif when_ == 'past':
+        qry = qry.filter((Event.end_at != None) & (Event.end_at < now_utc))
+        
+    if fmt:
+        qry = qry.filter(Event.event_type == fmt)
+    
+    # Sorting
+    if sort == 'upcoming':
+        qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
+    elif sort == 'created':
+        qry = qry.order_by(Event.created_at.desc())
+    elif sort == 'title':
+        qry = qry.order_by(func.lower(Event.title).asc())
+    else:
+        qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
+    
+    events = qry.all()
+    
+    return render_template(
+        'my-events.html', 
+        active_page='my-events',
+        events=events,
+        view=view,
+        when_selected=when_,
+        fmt_selected=fmt,
+        sort_selected=sort,
+    )
