@@ -21,7 +21,7 @@
   <div class="container">
     <div class="row g-4 align-items-center py-4">
       <div class="col-12 col-lg-7">
-        <img src="{{image}}" class="img-fluid rounded" alt="Cover image for Founders’ Breakfast: AI in Practice">
+        <img src="{{ image }}" class="img-fluid rounded" alt="{{ image_alt_text }}">
       </div>
       <div class="col-12 col-lg-5">
         {% if status == 'Open' %}
@@ -166,7 +166,7 @@
           <ul class="list-unstyled mb-0">
             <li class="mb-2"><strong>Dress code:</strong> Casual</li>
             <li class="mb-2"><strong>Accessibility:</strong> Wheelchair accessible</li>
-            <li class="mb-2"><strong>Contact:</strong> support@foundersbreakfast.com</li>
+            <li class="mb-2"><strong>Contact:</strong> {{ host_email }}</li>
             <li class="mb-0"><strong>Share:</strong> <a href="#" class="link-primary">Copy link</a></li>
           </ul>
         </div>

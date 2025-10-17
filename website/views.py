@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
 from .forms import CreateEventForm, CommentForm
-from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
+from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking, User
 from . import db
 from werkzeug.utils import secure_filename
 import os, time, uuid
@@ -126,11 +126,14 @@ def event(event_id):
     title = db.session.execute(db.select(Event.title).where(Event.id==event_id)).scalar_one()
     description = db.session.execute(db.select(Event.description).where(Event.id==event_id)).scalar_one()
     capacity = db.session.execute(db.select(Event.capacity).where(Event.id==event_id)).scalar_one()
-    hostName = db.session.execute(db.select(Event.host_user_id).where(Event.id==event_id)).scalar_one()
+    hostID = db.session.execute(db.select(Event.host_user_id).where(Event.id==event_id)).scalar_one()
+    hostName = db.session.execute(db.select(User.name).where(User.id==hostID)).scalar_one()
+    hostEmail = db.session.execute(db.select(User.email).where(User.id==hostID)).scalar_one()
     formatType = db.session.execute(db.select(Event.event_type).where(Event.id==event_id)).scalar_one()
     startAt = db.session.execute(db.select(Event.start_at).where(Event.id==event_id)).scalar_one()
     tagId = db.session.execute(db.select(Event_Tag.tag_id).where(Event_Tag.event_id==event_id)).scalar_one()
     tagName = db.session.execute(db.select(Tag.name).where(Tag.id==tagId)).scalar_one()
+    imageAltText = db.session.execute(db.select(Event_Image.alt_text).where(Event_Image.event_id==event_id)).scalar_one_or_none()
     price = db.session.execute(
         db.select(func.min(TicketType.price)).where(TicketType.event_id==event_id)
     ).scalar()
@@ -142,8 +145,10 @@ def event(event_id):
         db.select(Event_Image.url).where(Event_Image.event_id==event_id)
     ).scalar_one_or_none()
     status = checkStatus(event_id)
-    #hostEmail = db.session.execute(db.select(User.email).
-    return render_template('event.html', event_id=event_id, title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity, host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event')
+    return render_template('event.html', event_id=event_id, host_email=hostEmail,
+    title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity,
+    host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
+    image_alt_text=imageAltText)
 
 @main_bp.route('/bookinghistory')
 @login_required
@@ -193,6 +198,7 @@ def createUpdate():
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
 
         event = Event(
+            host_user_id=current_user.id,
             title=form.title.data,
             description=form.description.data,
             event_type=form.format.data,
