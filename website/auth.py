@@ -57,11 +57,10 @@ def register():
         login_user(user)
         flash('Registration successful. Welcome!', 'success')
         return redirect(url_for('main.index'))
-    return render_template('user.html', form=form, heading='Register')
+    return render_template('register.html', form=form)
 
-@auth_bp.route('/logout')
-@login_required
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('main.index'))
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('auth.login'))
