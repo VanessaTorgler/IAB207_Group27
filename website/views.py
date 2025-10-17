@@ -326,3 +326,15 @@ def search_events():
         sort_selected=sort,
         fmt_selected=fmt,
     )
+
+@main_bp.route('/my-events')
+@login_required
+def my_events():
+    # Grab events where the current user is the host
+    events = (
+        db.session.query(Event)
+        .filter(Event.host_user_id == current_user.id)
+        .order_by(Event.created_at.desc())
+        .all()
+    )
+    return render_template('my-events.html', active_page='my-events', events=events)

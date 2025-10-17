@@ -52,6 +52,12 @@
               <i class="bi bi-clock-history me-1"></i> Booking History
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'my-events' %}active{% endif %}"
+              href="{{ url_for('main.my_events') }}">
+              <i class="bi bi-calendar-event me-1"></i> My Events
+            </a>
+          </li>
 
           <!-- Divider (desktop only) -->
           <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
