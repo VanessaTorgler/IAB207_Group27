@@ -3,7 +3,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_migrate import Migrate
+#from flask_migrate import Migrate
 from sqlalchemy import event, MetaData
 from sqlalchemy.engine import Engine
 
@@ -17,7 +17,7 @@ convention = {
 }
 
 db = SQLAlchemy(metadata=MetaData(naming_convention=convention))
-migrate = Migrate(compare_type=True, compare_server_default=True)
+#migrate = Migrate(compare_type=True, compare_server_default=True)
 
 # turn on foreign key constraints so certain rules can operate
 @event.listens_for(Engine, "connect")
@@ -45,19 +45,19 @@ def create_app():
     db.init_app(app)
     # import all models before starting the Flask-Migrate
     from . import models
-    migrate.init_app(app, db, render_as_batch=True)
+    #migrate.init_app(app, db, render_as_batch=True)
     #create the db tables and add tags. uncomment if you make changes to models.py
     '''with app.app_context():
-       from . import models
-       db.create_all()
-       from .models import Tag
-       tag1 = Tag(name="Tech & AI")
-       tag2 = Tag(name="Marketing")
-       tag3 = Tag(name="Finance")
-       tag4 = Tag(name="Health")
-       tag5 = Tag(name="Education")
-       db.session.add_all([tag1, tag2, tag3, tag4, tag5])
-       db.session.commit()
+         from . import models
+           db.create_all()
+           from .models import Tag
+           tag1 = Tag(name="Tech & AI")
+           tag2 = Tag(name="Marketing")
+           tag3 = Tag(name="Finance")
+           tag4 = Tag(name="Health")
+           tag5 = Tag(name="Education")
+           db.session.add_all([tag1, tag2, tag3, tag4, tag5])
+           db.session.commit()
        '''
     Bootstrap5(app)
     
