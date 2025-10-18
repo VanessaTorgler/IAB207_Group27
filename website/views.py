@@ -93,35 +93,6 @@ def index():
     )
 
 
-def check_upload_file(form):
-    # get file data from form
-    fp = form.event_image.data
-    filename = secure_filename(fp.filename or "")
-    if not filename:
-        return None
-
-    # allow-list by extension
-    ALLOWED = {'.jpg', '.jpeg', '.png', '.webp'}
-    root, ext = os.path.splitext(filename)
-    ext = ext.lower()
-    if ext not in ALLOWED:
-        return None
-
-    # unique filename to avoid collisions / caching issues
-    unique_name = f"{root}_{int(time.time())}_{uuid.uuid4().hex[:6]}{ext}"
-    
-    
-    # get the current path of the module file… store image file relative to this path  
-    BASE_PATH = os.path.dirname(__file__)
-    # upload file location – directory of this file/static/img
-    upload_dir = os.path.join(BASE_PATH, 'static', 'uploads')
-    os.makedirs(upload_dir, exist_ok=True)
-    # store relative path in DB as image location in HTML is relative
-    upload_path = os.path.join(upload_dir, unique_name)
-    # save the file and return the db upload path  
-    fp.save(upload_path)
-    return f"/static/uploads/{unique_name}"
-
 # @main_bp.route('/bookinghistory')
 # @login_required
 # def bookingHistory():

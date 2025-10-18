@@ -2,10 +2,10 @@ from flask import Blueprint, render_template, session, request, redirect, url_fo
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
-from .forms import CreateEventForm, CommentForm
+from .forms import CreateEventForm, CommentForm, check_upload_file
 from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
 from .bookings import checkStatus
-from .views import check_upload_file
+#from .views import check_upload_file
 from . import db
 from werkzeug.utils import secure_filename
 import os, time, uuid
