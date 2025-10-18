@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block header %}
+
 <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
   <div>
     <h1 class="h3 mb-1">Discover Professional Networking Events</h1>
@@ -33,11 +34,11 @@
   </div>
   <div class="offcanvas-body">
     <form class="row g-3" role="search" aria-label="Event filters (mobile)" method="get"
-          action="{{ url_for('main.index') }}">
+      action="{{ url_for('main.index') }}">
       <div class="col-12">
         <label for="m-search" class="form-label">Search</label>
-        <input id="m-search" name="q" value="{{ q or '' }}" type="text"
-              class="form-control" placeholder="Search by title, host, or keyword">
+        <input id="m-search" name="q" value="{{ q or '' }}" type="text" class="form-control"
+          placeholder="Search by title, host, or keyword">
       </div>
 
       <div class="col-12">
@@ -53,7 +54,7 @@
       <div class="col-12">
         <label for="m-format" class="form-label">Format</label>
         <select id="m-format" name="format" class="form-select">
-          <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any</option>
+          <option value="" {{ (fmt_selected or '' )=='' and 'selected' or '' }}>Any</option>
           {% for f in ['In-person','Virtual','Hybrid'] %}
           <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
           {% endfor %}
@@ -68,19 +69,17 @@
           <div class="col-6">
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input id="m-price-min" name="price_min"
-                    value="{{ price_min if price_min is not none else '' }}"
-                    type="number" class="form-control" placeholder="Min" min="0" step="1"
-                    aria-label="Minimum price in dollars">
+              <input id="m-price-min" name="price_min" value="{{ price_min if price_min is not none else '' }}"
+                type="number" class="form-control" placeholder="Min" min="0" step="1"
+                aria-label="Minimum price in dollars">
             </div>
           </div>
           <div class="col-6">
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input id="m-price-max" name="price_max"
-                    value="{{ price_max if price_max is not none else '' }}"
-                    type="number" class="form-control" placeholder="Max" min="0" step="1"
-                    aria-label="Maximum price in dollars">
+              <input id="m-price-max" name="price_max" value="{{ price_max if price_max is not none else '' }}"
+                type="number" class="form-control" placeholder="Max" min="0" step="1"
+                aria-label="Maximum price in dollars">
             </div>
           </div>
         </div>
@@ -92,10 +91,10 @@
         <label for="m-sort" class="form-label">Sort by</label>
         <select id="m-sort" name="sort" class="form-select" aria-label="Sort events">
           {% for val,label in [('relevance','Relevance'),
-                              ('dateSoonest','Date - Soonest first'),
-                              ('priceLowHigh','Price - Low to high'),
-                              ('priceHighLow','Price - High to low'),
-                              ('popularity','Popularity')] %}
+          ('dateSoonest','Date - Soonest first'),
+          ('priceLowHigh','Price - Low to high'),
+          ('priceHighLow','Price - High to low'),
+          ('popularity','Popularity')] %}
           <option value="{{ val }}" {{ sort_selected==val and 'selected' or '' }}>{{ label }}</option>
           {% endfor %}
         </select>
@@ -112,19 +111,20 @@
 <!-- Inline Filters (desktop) -->
 <section class="py-3 d-none d-md-block">
   <div class="container">
-    <form class="row g-3 align-items-end" role="search" aria-label="Event filters (desktop)"
-      method="get" action="{{ url_for('main.index') }}">
+    <form class="row g-3 align-items-end" role="search" aria-label="Event filters (desktop)" method="get"
+      action="{{ url_for('main.index') }}">
       <div class="col-md-4">
         <label for="search" class="form-label">Search</label>
-        <input id="search" name="q" value="{{ q or '' }}" type="text"
-              class="form-control" placeholder="Search by title, host, or keyword">
+        <input id="search" name="q" value="{{ q or '' }}" type="text" class="form-control"
+          placeholder="Search by title, host, or keyword">
       </div>
 
       <div class="col-md-3">
         <label for="category" class="form-label">Category</label>
         <select id="category" name="category" class="form-select">
           <option value="" {{ ''==category_selected and 'selected' or '' }}>All categories</option>
-          {% for c in ['Tech & AI','Marketing','Finance','Health','Education','Sustainability','Remote Work','Networking','Entrepreneurship'] %}
+          {% for c in ['Tech & AI','Marketing','Finance','Health','Education','Sustainability','Remote
+          Work','Networking','Entrepreneurship'] %}
           <option value="{{ c }}" {{ c==category_selected and 'selected' or '' }}>{{ c }}</option>
           {% endfor %}
         </select>
@@ -133,7 +133,7 @@
       <div class="col-md-3">
         <label for="format" class="form-label">Format</label>
         <select id="m-format" name="format" class="form-select">
-          <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any</option>
+          <option value="" {{ (fmt_selected or '' )=='' and 'selected' or '' }}>Any</option>
           {% for f in ['In-person','Virtual','Hybrid'] %}
           <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
           {% endfor %}
@@ -145,10 +145,10 @@
         <label for="sort" class="form-label">Sort by</label>
         <select id="sort" name="sort" class="form-select" aria-label="Sort events">
           {% for val,label in [('relevance','Relevance'),
-                              ('dateSoonest','Date - Soonest first'),
-                              ('priceLowHigh','Price - Low to high'),
-                              ('priceHighLow','Price - High to low'),
-                              ('popularity','Popularity')] %}
+          ('dateSoonest','Date - Soonest first'),
+          ('priceLowHigh','Price - Low to high'),
+          ('priceHighLow','Price - High to low'),
+          ('popularity','Popularity')] %}
           <option value="{{ val }}" {{ sort_selected==val and 'selected' or '' }}>{{ label }}</option>
           {% endfor %}
         </select>
@@ -158,10 +158,8 @@
         <label class="form-label" for="price-min">Min price (AUD)</label>
         <div class="input-group">
           <span class="input-group-text">$</span>
-          <input id="price-min" name="price_min"
-                value="{{ price_min if price_min is not none else '' }}"
-                type="number" class="form-control" placeholder="Min" min="0" step="1"
-                aria-label="Minimum price in dollars">
+          <input id="price-min" name="price_min" value="{{ price_min if price_min is not none else '' }}" type="number"
+            class="form-control" placeholder="Min" min="0" step="1" aria-label="Minimum price in dollars">
         </div>
       </div>
 
@@ -169,10 +167,8 @@
         <label class="form-label" for="price-max">Max price (AUD)</label>
         <div class="input-group">
           <span class="input-group-text">$</span>
-          <input id="price-max" name="price_max"
-                value="{{ price_max if price_max is not none else '' }}"
-                type="number" class="form-control" placeholder="Max" min="0" step="1"
-                aria-label="Maximum price in dollars">
+          <input id="price-max" name="price_max" value="{{ price_max if price_max is not none else '' }}" type="number"
+            class="form-control" placeholder="Max" min="0" step="1" aria-label="Maximum price in dollars">
         </div>
       </div>
 
@@ -249,18 +245,27 @@
                 </span>
               </div>
             </div>
-          </article>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="col-12">
-        <div class="card" id="home-empty">
-          <div class="card-body text-center text-muted">
-            <p class="mb-2">No events match your filters.</p>
-            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Clear filters</a>
+            <span class="fw-semibold text-primary">
+              {% if r.min_price and r.min_price > 0 %}
+              ${{ '%.2f'|format(r.min_price) }}
+              {% else %}
+              FREE
+              {% endif %}
+            </span>
           </div>
         </div>
+      </article>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12">
+      <div class="card" id="home-empty">
+        <div class="card-body text-center text-muted">
+          <p class="mb-2">No events match your filters.</p>
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.index') }}">Clear filters</a>
+        </div>
       </div>
+    </div>
     {% endif %}
   </div>
 

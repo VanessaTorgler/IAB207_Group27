@@ -47,35 +47,18 @@ def create_app():
     from . import models
     #migrate.init_app(app, db, render_as_batch=True)
     #create the db tables and add tags. uncomment if you make changes to models.py
-    with app.app_context():
-      from . import models
-      db.create_all()
-      from .models import Tag
-      tag1 = Tag(name="Tech & AI")
-      tag2 = Tag(name="Marketing")
-      tag3 = Tag(name="Finance")
-      tag4 = Tag(name="Health")
-      tag5 = Tag(name="Education")
-
-      # fix for tags breaking on startup
-      tags_array = [tag1, tag2, tag3, tag4, tag5]
-
-      for each in tags_array:
-          # check if each tag exists
-          check_existing = db.session.execute(db.select(Tag).where(Tag.name == each.name)).scalar()
-
-          if app.debug == True:
-              print("Tag check: " + str(check_existing))
-
-          # if it doesn't, add it
-          if check_existing == None:
-              if app.debug == True:
-                  print("Tag added: " + str(each))
-              #add_tag = Tag(name = each)
-              db.session.add(each)
-
-      #db.session.add_all([tag1, tag2, tag3, tag4, tag5])
-      db.session.commit()
+    '''with app.app_context():
+         from . import models
+           db.create_all()
+           from .models import Tag
+           tag1 = Tag(name="Tech & AI")
+           tag2 = Tag(name="Marketing")
+           tag3 = Tag(name="Finance")
+           tag4 = Tag(name="Health")
+           tag5 = Tag(name="Education")
+           db.session.add_all([tag1, tag2, tag3, tag4, tag5])
+           db.session.commit()
+       '''
     Bootstrap5(app)
     
     # initialise the login manager

@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for
+from flask import Blueprint, render_template, session, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
 from .forms import CreateEventForm, CommentForm
-from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
+from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking, User
 from . import db
 from werkzeug.utils import secure_filename
 import os, time, uuid
@@ -91,7 +91,6 @@ def index():
         sort_selected=sort,
         fmt_selected=fmt,
     )
-
 
 # @main_bp.route('/bookinghistory')
 # @login_required

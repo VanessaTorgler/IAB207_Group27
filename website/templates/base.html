@@ -12,6 +12,7 @@
   <link href="../static/style/main.css" rel="stylesheet">
 </head>
 
+
 <body>
 
   <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded"
@@ -57,59 +58,57 @@
 
           <!-- User Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
-              role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              {% if current_user.is_authenticated %}
-                <span class="fw-semibold">
-                  {{ current_user.username
-                    or current_user.name
-                    or current_user.email
-                    | default('Account', true) }}
-                </span>
-              {% else %}
-                <span class="fw-semibold">Guest</span>
-              {% endif %}
+            {% if current_user.is_authenticated %}
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="fw-semibold">
+                {{ current_user.username
+                or current_user.name
+                or current_user.email
+                | default('Account', true) }}
+              </span>
+
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-person-circle me-2"></i>
-                  Profile</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-gear me-2"></i>
-                  Settings</a></li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li>
-                <form method="post" action="{{ url_for('auth.logout') }}">
-                  {% if csrf_token is defined %}{{ csrf_token() }}{% endif %}
-                  <button type="submit" class="dropdown-item text-danger">
-                    <i class="bi bi-box-arrow-right me-2"></i> Logout
-                  </button>
-                </form>
-              </li>
-            </ul>
+            {% else %}
+          <li><a class="nav-item nav-link" href="{{url_for('auth.register')}}">Register</a></li>
+          <li><a class="nav-item nav-link" href="{{url_for('auth.login')}}">Log In</a></li>
+          {% endif %}
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-person-circle me-2"></i>
+                Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-gear me-2"></i>
+                Settings</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <form method="post" action="{{ url_for('auth.logout') }}">
+                {% if csrf_token is defined %}{{ csrf_token() }}{% endif %}
+                <button type="submit" class="dropdown-item text-danger">
+                  <i class="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
+              </form>
+            </li>
+          </ul>
           </li>
         </ul>
       </div>
     </div>
   </nav>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+    {{ message|safe }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endwith %}
   <!-- Header -->
   <header class="py-4 border-bottom">
     {% block breadcrumbs %}
 
     {% endblock %}
-    <!-- Code for using Flask flash -->
-    <div class="container-fluid">
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      {% for message in get_flashed_messages() %}
-      <div class="alert alert-warning">
-        <button type="button" class="close" data-dismiss="alert" aria-label="close">x</button>
-        {{message}}
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
-    </div>
+
     {% block header %}
 
     {% endblock %}
