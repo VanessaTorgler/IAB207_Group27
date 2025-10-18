@@ -122,35 +122,11 @@ def check_upload_file(form):
     fp.save(upload_path)
     return f"/static/uploads/{unique_name}"
 
-@main_bp.route('/bookinghistory')
-@login_required
-def bookingHistory():
-    # Keep the original URL but serve the dynamic booking history from the new blueprint
-    return redirect(url_for('bookings.booking_history'))
-
-def checkStatus(event_id):
-    #if it's cancelled, return "Cancelled
-    if db.session.execute(db.select(Event.cancelled).where(Event.id==event_id)).scalar_one():
-        return "Cancelled"
-
-    end_at = db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one()
-    if end_at:
-        now = datetime.now(timezone.utc)
-        #if it's past, return "Inactive"
-        if end_at.tzinfo is None:
-            end_at = end_at.replace(tzinfo=timezone.utc)
-        if end_at <= now:
-            return "Inactive"
-
-    #if num of tickets sold = capacity, return "Sold Out"
-    sold = db.session.execute(
-        db.select(func.count(Booking.booking_id)).where(Booking.event_id==event_id)
-    ).scalar_one()
-    cap = db.session.execute(db.select(Event.capacity).where(Event.id==event_id)).scalar_one()
-    if cap is not None and cap <= sold:
-        return "Sold Out"
-
-    return "Open"
+# @main_bp.route('/bookinghistory')
+# @login_required
+# def bookingHistory():
+#     # Keep the original URL but serve the dynamic booking history from the new blueprint
+#     return redirect(url_for('bookings.booking_history'))
 
 @main_bp.route('/search')
 def search_events():

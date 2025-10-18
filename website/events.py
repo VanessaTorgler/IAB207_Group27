@@ -4,7 +4,8 @@ from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
 from .forms import CreateEventForm, CommentForm
 from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking
-from .views import checkStatus
+from .bookings import checkStatus
+from .views import check_upload_file
 from . import db
 from werkzeug.utils import secure_filename
 import os, time, uuid
