@@ -194,3 +194,5 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 
 .table .truncate-col a.text-reset{text-decoration:none;}
 .table .truncate-col a.text-reset:hover{text-decoration:underline;}
+
+.modal .btn-danger { font-weight: 600; }
