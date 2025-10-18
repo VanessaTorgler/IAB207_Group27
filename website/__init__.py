@@ -100,5 +100,8 @@ def create_app():
 
     from . import bookings
     app.register_blueprint(bookings.bookings_bp)
+
+    from . import events
+    app.register_blueprint(events.events_bp)
     
     return app
