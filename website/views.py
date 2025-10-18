@@ -10,6 +10,11 @@ import os, time, uuid
 
 main_bp = Blueprint('main', __name__)
 
+@main_bp.route('/')
+def _index():
+    # redirect base url to /home
+    return redirect(url_for('main.index'))
+
 @main_bp.route('/home')
 def index():
     session['event'] = None
