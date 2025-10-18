@@ -336,6 +336,10 @@ def my_events():
     when_ = (request.args.get("when") or "upcoming").strip()
     fmt = (request.args.get("format") or "").strip()
     sort = (request.args.get("sort") or "upcoming").strip()
+    q_text = (request.args.get("q")      or "").strip()
+    status_filter = (request.args.get("status") or "all").strip().lower()
+    price_min = request.args.get("price_min", type=float)
+    price_max = request.args.get("price_max", type=float)
 
     qry = (
         db.session.query(
@@ -371,10 +375,8 @@ def my_events():
 
     rows = qry.all()
 
-    events = [e for (e, _, _) in rows]
+    # Calculate the metrics and status of events
     metrics = {}
-    tags_map: dict[int, str] = {}
-    
     for e, mp, sold in rows:
         status = "Open"
         if e.cancelled:
@@ -386,29 +388,41 @@ def my_events():
                     end_at = end_at.replace(tzinfo=timezone.utc)
                 if end_at <= now_utc:
                     status = "Inactive"
-            if (
-                status == "Open"
-                and e.capacity is not None
-                and (sold or 0) >= e.capacity
-            ):
+            if status == "Open" and e.capacity is not None and (sold or 0) >= e.capacity:
                 status = "Sold Out"
+
         metrics[e.id] = {
             "min_price": float(mp or 0.0),
             "sold": int(sold or 0),
             "status": status,
         }
-        # If user has created events, build tag names
-        if events:
-            event_ids = [e.id for e in events]
-            tag_rows = (
-                db.session.query(Event_Tag.event_id, Tag.name)
-                .join(Tag, Tag.id == Event_Tag.tag_id)
-                .filter(Event_Tag.event_id.in_(event_ids))
-                .all()
-            )
-            # If multiple tags per event, pick the first
-            for eid, name in tag_rows:
-                tags_map.setdefault(eid, name)
+
+    # Apply Search + Status filters
+    events = []
+    for e, _, _ in rows:
+        m = metrics[e.id]
+        if q_text and q_text.lower() not in (e.title or "").lower():
+            continue
+        if status_filter != "all" and m["status"].lower().replace(" ", "") != status_filter.replace(" ", ""):
+            continue
+        if price_min is not None and metrics[e.id]["min_price"] < price_min:
+            continue
+        if price_max is not None and metrics[e.id]["min_price"] > price_max:
+            continue
+        events.append(e)
+
+    # event_id, first tag name map for displayed events
+    tags_map = {}
+    if events:
+        event_ids = [e.id for e in events]
+        tag_rows = (
+            db.session.query(Event_Tag.event_id, Tag.name)
+            .join(Tag, Tag.id == Event_Tag.tag_id)
+            .filter(Event_Tag.event_id.in_(event_ids))
+            .all()
+        )
+        for eid, name in tag_rows:
+            tags_map.setdefault(eid, name)
 
     return render_template(
         "my-events.html",
@@ -420,4 +434,7 @@ def my_events():
         sort_selected=sort,
         metrics=metrics,
         tags_map=tags_map,
+        q_text=q_text,
+        status_selected=status_filter,
+        price_min=price_min, price_max=price_max,
     )
