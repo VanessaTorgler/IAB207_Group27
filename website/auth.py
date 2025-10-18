@@ -40,13 +40,13 @@ def register():
         exists = db.session.scalar(db.select(User).where(User.name == user_name))
         if exists:
             flash('User name is already taken.', 'warning')
-            return render_template('user.html', form=form, heading='Register')
+            return render_template('register.html', form=form)
 
         if email:
             mail_exists = db.session.scalar(db.select(User).where(User.email == email))
             if mail_exists:
                 flash('An account with that email already exists.', 'warning')
-                return render_template('user.html', form=form, heading='Register')
+                return render_template('register.html', form=form)
 
         user = User(name=user_name, email=email, password_hash=generate_password_hash(form.password.data))
         if hasattr(user, 'mobile') and mobile_val:
