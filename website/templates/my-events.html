@@ -45,74 +45,105 @@
         </a>
       </div>
     </div>
-    <div class="row g-5">
+    {% if q_text or (status_selected) or (category_selected) or (price_min is not none) or (price_max is not none) %}
+      <div class="mb-3 small">
+        <span class="text-muted me-2">Active filters:</span>
+        {% if q_text %}<span class="badge text-bg-light me-1">Search: “{{ q_text }}”</span>{% endif %}
+        {% for s in status_selected %}<span class="badge text-bg-light me-1">{{ s }}</span>{% endfor %}
+        {% for c in category_selected %}<span class="badge text-bg-light me-1">{{ c }}</span>{% endfor %}
+        {% if price_min is not none %}<span class="badge text-bg-light me-1">Min ${{ '%.2f'|format(price_min) }}</span>{% endif %}
+        {% if price_max is not none %}<span class="badge text-bg-light me-1">Max ${{ '%.2f'|format(price_max) }}</span>{% endif %}
+        <a class="ms-2" href="{{ url_for('main.my_events', view=view, sort=sort_selected) }}">Reset all</a>
+      </div>
+    {% endif %}
+    <div class="row g-5 align-items-start">
       <!-- Left sidebar -->
       <aside class="col-12 col-md-3">
-        <div class="card sidebar-sticky filters-wide">
+        <div class="card sidebar-sticky">
           <div class="card-header fw-semibold">Filters</div>
           <div class="card-body small">
-            <form method="get" action="{{ url_for("main.my_events") }}">
+            <form method="get" action="{{ url_for('main.my_events') }}" class="filters-grid">
+              <!-- keep view + sort so we don’t lose state -->
               <input type="hidden" name="view" value="{{ view }}">
-              <!-- Search -->
-              <div class="mb-3">
+              <input type="hidden" name="sort" value="{{ sort_selected }}">
+
+              <!-- Search (full width) -->
+              <div class="grid-full">
                 <label for="q" class="form-label">Search</label>
-                <input id="q" name="q" value="{{ q_text or '' }}" type="text" class="form-control form-control-sm"
-                      placeholder="Title…">
+                <input id="q" name="q" class="form-control form-control-sm" placeholder="Title..." value="{{ q_text or '' }}">
               </div>
 
-              <div class="mb-3">
+              <!-- When (left) -->
+              <div>
                 <label for="when" class="form-label">When</label>
                 <select id="when" name="when" class="form-select form-select-sm">
                   {% for val,label in [('upcoming','Upcoming'), ('past','Past'), ('all','All')] %}
-                    <option value="{{ val }}" {{ when_selected==val and 'selected' or '' }}>{{ label }}
-                    </option>
+                    <option value="{{ val }}" {{ when_selected==val and 'selected' or '' }}>{{ label }}</option>
                   {% endfor %}
                 </select>
               </div>
-              <div class="mb-3">
+
+              <!-- Format (right) -->
+              <div>
                 <label for="format" class="form-label">Format</label>
                 <select id="format" name="format" class="form-select form-select-sm">
-                  <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any
-                  </option>
+                  <option value="" {{ (fmt_selected or '')=='' and 'selected' or '' }}>Any</option>
                   {% for f in ['In-person','Virtual','Hybrid'] %}
-                    <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}
-                    </option>
+                    <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
                   {% endfor %}
                 </select>
               </div>
-              <div class="mb-3">
-                <label for="status" class="form-label">Status</label>
-                <select id="status" name="status" class="form-select form-select-sm">
-                  {% for val,label in [
-                    ('all','All'),
-                    ('open','Open'),
-                    ('soldout','Sold Out'),
-                    ('cancelled','Cancelled'),
-                    ('inactive','Inactive'),
-                  ] %}
-                    <option value="{{ val }}" {{ status_selected==val and 'selected' or '' }}>{{ label }}</option>
+
+              <!-- Status (left) -->
+              <fieldset>
+                <legend class="form-label mb-1">Status</legend>
+                <div class="check-stack list-scroll">
+                  {% for opt in ['Open', 'Sold Out', 'Cancelled', 'Inactive'] %}
+                    {% set normalized = opt.lower().replace(' ', '') %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="status-{{ normalized }}"
+                            name="status" value="{{ normalized }}"
+                            {% if status_selected and normalized in status_selected %}checked{% endif %}>
+                      <label class="form-check-label" for="status-{{ normalized }}">{{ opt }}</label>
+                    </div>
                   {% endfor %}
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Price (AUD)</label>
-                <div class="row g-2">
-                  <div class="col-6">
-                    <input type="number" name="price_min" class="form-control form-control-sm"
-                          placeholder="Min" min="0" step="1"
-                          value="{{ price_min if price_min is not none else '' }}">
-                  </div>
-                  <div class="col-6">
-                    <input type="number" name="price_max" class="form-control form-control-sm"
-                          placeholder="Max" min="0" step="1"
-                          value="{{ price_max if price_max is not none else '' }}">
-                  </div>
+                </div>
+              </fieldset>
+
+              <!-- Categories (right) -->
+              <fieldset>
+                <legend class="form-label mb-1">Categories</legend>
+                <div class="check-stack list-scroll">
+                  {% for cat in all_categories %}
+                    {% set cid = 'cat-' ~ loop.index %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="{{ cid }}"
+                            name="category" value="{{ cat }}"
+                            {% if category_selected and cat in category_selected %}checked{% endif %}>
+                      <label class="form-check-label" for="{{ cid }}">{{ cat }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+
+              <!-- Price range (full width) -->
+              <div class="grid-full">
+                <label class="form-label">Price range (min/max)</label>
+                <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: .5rem;">
+                  <input name="price_min" class="form-control form-control-sm" placeholder="Min" type="number" step="0.01"
+                        value="{{ price_min if price_min is not none }}">
+                  <input name="price_max" class="form-control form-control-sm" placeholder="Max" type="number" step="0.01"
+                        value="{{ price_max if price_max is not none }}">
                 </div>
               </div>
-              <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-sm" type="submit">Apply</button>
-                <a class="btn btn-outline-secondary btn-sm"
-                   href="{{ url_for('main.my_events', view=view) }}">Clear</a>
+
+              <!-- Buttons (two columns) -->
+              <div>
+                <button class="btn btn-primary btn-sm w-100" type="submit">Apply</button>
+              </div>
+              <div>
+                <a class="btn btn-outline-secondary btn-sm w-100"
+                  href="{{ url_for('main.my_events', view=view, sort=sort_selected) }}">Clear</a>
               </div>
             </form>
           </div>
@@ -122,7 +153,7 @@
       <section class="col-12 col-md-9">
         {% if events and events|length > 0 %}
           {% if view == 'table' %}
-            <div class="table-responsive">
+            <div class="table-responsive-md">
               <table class="table align-middle">
                 <thead>
                   <tr>
@@ -133,7 +164,7 @@
                     <th class="text-nowrap" style="width:110px;">Sold</th>
                     <th style="width:170px;">Start</th>
                     <th class="d-none d-lg-table-cell" style="width:170px;">RSVP closes</th>
-                    <th style="width:120px;">Actions</th>
+                    <th style="width:56px;" class="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,10 +172,18 @@
                     {% set cover = e.images[0].url if e.images else url_for('static', filename='img/founders-breakfast.jpg') %}
                     <tr>
                       <td class="fw-semibold">
-                        <div class="truncate-col">{{ e.title }}</div>
+                        <div class="truncate-col">
+                          <a class="text-reset text-decoration-none" href="{{ url_for('main.event', event_id=e.id) }}">{{ e.title }}</a>
+                        </div>
                       </td>
-
-                      <td class="small">{{ tags_map.get(e.id, "—") }}</td>
+                      <td class="small">
+                        {% set cats = tags_map.get(e.id, []) %}
+                        {% if cats %}
+                          <div class="truncate-col">{{ cats|join(', ') }}</div>
+                        {% else %}
+                          —
+                        {% endif %}
+                      </td>
 
                       {% set m = metrics.get(e.id) %}
                       <td>
@@ -173,11 +212,23 @@
                       <td class="text-muted small d-none d-lg-table-cell">
                         {% if e.rsvp_closes %}{{ e.rsvp_closes.strftime('%d/%m/%y %I:%M %p') }}{% else %}—{% endif %}
                       </td>
-
-                      <td>
-                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.event', event_id=e.id) }}">View</a>
+                      <td class="text-end">
+                        <div class="dropdown position-relative">
+                          <button class="btn btn-outline-secondary btn-sm btn-icon dropdown-toggle dropdown-toggle-no-caret"
+                                  type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
+                            <li><a class="dropdown-item" href="{{ url_for('main.event', event_id=e.id) }}">View event</a></li>
+                            <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                            <li><a class="dropdown-item" href="#">View Attendees</a></li>
+                            <li><a class="dropdown-item" href="#">View Analytics</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#">Make Inactive</a></li>
+                            <li><a class="dropdown-item text-danger" href="#">Cancel Event</a></li>
+                          </ul>
+                        </div>
                       </td>
-
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -190,38 +241,57 @@
                 {% set cover = e.images[0].url if e.images else url_for('static', filename='img/founders-breakfast.jpg') %}
                 <div class="col">
                   <article class="card h-100 card--compact">
-                    <img src="{{ cover }}"
-                         class="card-img-top"
-                         alt="{{ e.title }} cover image">
+                    <img src="{{ cover }}" class="card-img-top" alt="{{ e.title }} cover image">
+
                     <div class="d-flex justify-content-between align-items-start p-3 pt-3 pb-0">
                       {% set m = metrics.get(e.id) %}
-                      <span class="badge rounded-pill {% if m.status == 'Open' %}badge-open {% elif m.status == 'Cancelled' %}badge-cancelled {% elif m.status == 'Inactive' %}badge-inactive {% elif m.status == 'Sold Out' %}badge-soldout {% else %}text-bg-light{% endif %}">
+                      <span class="badge rounded-pill
+                        {% if m.status == 'Open' %}badge-open
+                        {% elif m.status == 'Cancelled' %}badge-cancelled
+                        {% elif m.status == 'Inactive' %}badge-inactive
+                        {% elif m.status == 'Sold Out' %}badge-soldout
+                        {% else %}text-bg-light{% endif %}">
                         {{ m.status }}
                       </span>
-                      <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
+
+                      <div class="d-inline-flex align-items-center gap-2">
+                        <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
+                        <div class="dropdown">
+                          <button class="btn btn-outline-secondary btn-sm btn-icon dropdown-toggle dropdown-toggle-no-caret"
+                                  type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More options">
+                            <i class="bi bi-three-dots-vertical"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
+                            <li><a class="dropdown-item" href="{{ url_for('main.event', event_id=e.id) }}">View Event</a></li>
+                            <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                            <li><a class="dropdown-item" href="#">View Attendees</a></li>
+                            <li><a class="dropdown-item" href="#">View Analytics</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#">Make Inactive</a></li>
+                            <li><a class="dropdown-item text-danger" href="#">Cancel Event</a></li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
+
                     <div class="card-body d-flex flex-column">
-                      <h2 class="h6 card-title mb-1">{{ e.title }}</h2>
+                      <h2 class="h6 card-title mb-1">
+                        <a href="{{ url_for('main.event', event_id=e.id) }}"
+                          class="text-reset text-decoration-none">{{ e.title }}</a>
+                      </h2>
+
                       <p class="text-muted small mb-2">
-                        {% if e.start_at %}
-                          {{ e.start_at.strftime("%a, %d %b • %I:%M %p") }}
-                        {% endif %}
+                        {% if e.start_at %}{{ e.start_at.strftime("%a, %d %b • %I:%M %p") }}{% endif %}
                         {% if e.location_text %}• {{ e.location_text }}{% endif %}
                       </p>
-                      <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
-                        <span>
-                          {% if m.min_price > 0 %}
-                            ${{ '%.2f'|format(m.min_price) }}
-                          {% else %}
-                            FREE
-                          {% endif %}
-                        </span>
+
+                      <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
+                        <span>{% if m.min_price > 0 %}${{ '%.2f'|format(m.min_price) }}{% else %}FREE{% endif %}</span>
                         <span>{{ m.sold }}/{{ e.capacity if e.capacity is not none else '—' }}</span>
                       </div>
-                      <a class="btn btn-primary mt-auto"
-                         href="{{ url_for('main.event', event_id=e.id) }}">View Event</a>
                     </div>
                   </article>
+
                 </div>
               {% endfor %}
             </div>
