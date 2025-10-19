@@ -228,7 +228,7 @@
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
                             {% if m.status == 'Inactive' %}
-                              <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                              <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             {% else %}
                               <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Edit Event</a></li>
                             {% endif %}
@@ -289,7 +289,7 @@
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
                             {% if m.status == 'Inactive' %}
-                              <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                              <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             {% else %}
                               <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Edit Event</a></li>
                             {% endif %}
