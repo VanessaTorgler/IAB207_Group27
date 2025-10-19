@@ -33,17 +33,17 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close filters"></button>
   </div>
   <div class="offcanvas-body">
-    <form class="row g-3" role="search" aria-label="Event filters (mobile)" method="get"
+    <form class="row g-2 align-items-end filters-compact" role="search" aria-label="Event filters (mobile)" method="get"
       action="{{ url_for('main.index') }}">
       <div class="col-12">
         <label for="m-search" class="form-label">Search</label>
-        <input id="m-search" name="q" value="{{ q or '' }}" type="text" class="form-control"
+        <input id="m-search" name="q" value="{{ q or '' }}" type="text" class="form-control form-control-sm"
           placeholder="Search by title, host, or keyword">
       </div>
 
       <div class="col-12">
         <label for="m-category" class="form-label">Category</label>
-        <select id="m-category" name="category" class="form-select">
+        <select id="m-category" name="category" class="form-select form-select-sm">
           <option value="" {{ ''==category_selected and 'selected' or '' }}>All categories</option>
           {% for c in ['Tech & AI','Marketing','Finance','Health','Education'] %}
           <option value="{{ c }}" {{ c==category_selected and 'selected' or '' }}>{{ c }}</option>
@@ -53,13 +53,22 @@
 
       <div class="col-12">
         <label for="m-format" class="form-label">Format</label>
-        <select id="m-format" name="format" class="form-select">
+        <select id="m-format" name="format" class="form-select form-select-sm">
           <option value="" {{ (fmt_selected or '' )=='' and 'selected' or '' }}>Any</option>
           {% for f in ['In-person','Virtual','Hybrid'] %}
           <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
           {% endfor %}
         </select>
+      </div>
 
+      <div class="col-12">
+        <label for="m-status" class="form-label">Status</label>
+        <select id="m-status" name="status" class="form-select form-select-sm">
+          <option value="" {{ (status_selected or '')=='' and 'selected' or '' }}>Any</option>
+          {% for s in ['Open','Sold Out','Cancelled','Inactive'] %}
+            <option value="{{ s }}" {{ status_selected==s and 'selected' or '' }}>{{ s }}</option>
+          {% endfor %}
+        </select>
       </div>
 
       <!-- Price range -->
@@ -67,18 +76,18 @@
         <label class="form-label" for="m-price-min">Price range (AUD)</label>
         <div class="row g-2">
           <div class="col-6">
-            <div class="input-group">
+            <div class="input-group input-group-sm">
               <span class="input-group-text">$</span>
               <input id="m-price-min" name="price_min" value="{{ price_min if price_min is not none else '' }}"
-                type="number" class="form-control" placeholder="Min" min="0" step="1"
+                type="number" class="form-control form-control-sm" placeholder="Min" min="0" step="1"
                 aria-label="Minimum price in dollars">
             </div>
           </div>
           <div class="col-6">
-            <div class="input-group">
+            <div class="input-group input-group-sm">
               <span class="input-group-text">$</span>
               <input id="m-price-max" name="price_max" value="{{ price_max if price_max is not none else '' }}"
-                type="number" class="form-control" placeholder="Max" min="0" step="1"
+                type="number" class="form-control form-control-sm" placeholder="Max" min="0" step="1"
                 aria-label="Maximum price in dollars">
             </div>
           </div>
@@ -89,7 +98,7 @@
       <!-- Sort By -->
       <div class="col-12">
         <label for="m-sort" class="form-label">Sort by</label>
-        <select id="m-sort" name="sort" class="form-select" aria-label="Sort events">
+        <select id="m-sort" name="sort" class="form-select form-select-sm" aria-label="Sort events">
           {% for val,label in [('relevance','Relevance'),
           ('dateSoonest','Date - Soonest first'),
           ('priceLowHigh','Price - Low to high'),
@@ -99,10 +108,13 @@
           {% endfor %}
         </select>
       </div>
-
-      <div class="col-12 d-grid">
-        <button type="submit" class="btn btn-primary">Apply</button>
+      <div class="col-12 d-flex justify-content-end gap-2">
+        <button type="submit" class="btn btn-primary btn-sm w-auto px-3">Apply</button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm w-auto px-3" data-bs-dismiss="offcanvas">
+          Clear
+        </a>
       </div>
+
     </form>
   </div>
 
@@ -111,17 +123,17 @@
 <!-- Inline Filters (desktop) -->
 <section class="py-3 d-none d-md-block">
   <div class="container">
-    <form class="row g-3 align-items-end" role="search" aria-label="Event filters (desktop)" method="get"
+    <form class="row g-2 align-items-end filters-compact" role="search" aria-label="Event filters (desktop)" method="get"
       action="{{ url_for('main.index') }}">
       <div class="col-md-4">
         <label for="search" class="form-label">Search</label>
-        <input id="search" name="q" value="{{ q or '' }}" type="text" class="form-control"
+        <input id="search" name="q" value="{{ q or '' }}" type="text" class="form-control form-control-sm"
           placeholder="Search by title, host, or keyword">
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="category" class="form-label">Category</label>
-        <select id="category" name="category" class="form-select">
+        <select id="category" name="category" class="form-select form-select-sm">
           <option value="" {{ ''==category_selected and 'selected' or '' }}>All categories</option>
           {% for c in ['Tech & AI','Marketing','Finance','Health','Education','Sustainability','Remote
           Work','Networking','Entrepreneurship'] %}
@@ -130,20 +142,29 @@
         </select>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="format" class="form-label">Format</label>
-        <select id="m-format" name="format" class="form-select">
+        <select id="m-format" name="format" class="form-select form-select-sm">
           <option value="" {{ (fmt_selected or '' )=='' and 'selected' or '' }}>Any</option>
           {% for f in ['In-person','Virtual','Hybrid'] %}
           <option value="{{ f }}" {{ fmt_selected==f and 'selected' or '' }}>{{ f }}</option>
           {% endfor %}
         </select>
-
       </div>
 
-      <div class="col-md-2">
+      <div class="col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select form-select-sm">
+          <option value="" {{ (status_selected or '')=='' and 'selected' or '' }}>Any</option>
+          {% for s in ['Open','Sold Out','Cancelled','Inactive'] %}
+            <option value="{{ s }}" {{ status_selected==s and 'selected' or '' }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
         <label for="sort" class="form-label">Sort by</label>
-        <select id="sort" name="sort" class="form-select" aria-label="Sort events">
+        <select id="sort" name="sort" class="form-select form-select-sm" aria-label="Sort events">
           {% for val,label in [('relevance','Relevance'),
           ('dateSoonest','Date - Soonest first'),
           ('priceLowHigh','Price - Low to high'),
@@ -154,28 +175,26 @@
         </select>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label" for="price-min">Min price (AUD)</label>
-        <div class="input-group">
+        <div class="input-group input-group-sm">
           <span class="input-group-text">$</span>
           <input id="price-min" name="price_min" value="{{ price_min if price_min is not none else '' }}" type="number"
-            class="form-control" placeholder="Min" min="0" step="1" aria-label="Minimum price in dollars">
+            class="form-control form-control-sm" placeholder="Min" min="0" step="1" aria-label="Minimum price in dollars">
         </div>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label" for="price-max">Max price (AUD)</label>
-        <div class="input-group">
+        <div class="input-group input-group-sm">
           <span class="input-group-text">$</span>
           <input id="price-max" name="price_max" value="{{ price_max if price_max is not none else '' }}" type="number"
-            class="form-control" placeholder="Max" min="0" step="1" aria-label="Maximum price in dollars">
+            class="form-control form-control-sm" placeholder="Max" min="0" step="1" aria-label="Maximum price in dollars">
         </div>
       </div>
-
-      <div class="col-md-4 d-none d-md-block"></div>
-
-      <div class="col-md-2 d-grid">
-        <button type="submit" class="btn btn-primary">Apply</button>
+      <div class="col-md-auto ms-md-auto d-flex justify-content-end align-items-end gap-2">
+        <button type="submit" class="btn btn-primary btn-sm w-auto px-3">Apply</button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm w-auto px-3">Clear filters</a>
       </div>
     </form>
 
@@ -220,10 +239,17 @@
           alt="{{ e.title }} cover image">
         {% endif %}
         <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge rounded-pill badge-open">Open</span>
-            <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
-          </div>
+        {% set status = r.status %}
+        {% set badge_class = {
+          'Open': 'badge-open',
+          'Sold Out': 'badge-soldout',
+          'Cancelled': 'badge-cancelled',
+          'Inactive': 'badge-inactive'
+        }[status] %}
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge rounded-pill {{ badge_class }}">{{ status }}</span>
+          <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
+        </div>
           <h2 class="h5 card-title">{{ e.title }}</h2>
           <p class="card-text text-muted mb-2">
             {% if e.start_at %}{{ e.start_at.strftime('%a, %d %b • %I:%M %p') }}{% endif %}
@@ -235,7 +261,9 @@
           <div class="d-flex justify-content-between align-items-center mt-auto">
             <div class="d-flex gap-2">
               <a class="btn btn-primary" href="{{ url_for('events.event', event_id=e.id) }}">View details</a>
-              <a class="btn btn-outline-primary" href="{{ url_for('events.event', event_id=e.id) }}">Book</a>
+              {% if r.status == 'Open' %}
+                <a class="btn btn-outline-primary" href="{{ url_for('events.event', event_id=e.id) }}">Book</a>
+              {% endif %}
             </div>
             <span class="fw-semibold text-primary">
               {% if r.min_price and r.min_price > 0 %}
@@ -262,14 +290,26 @@
   </div>
 
   <!-- Pagination -->
+  {% if pages > 1 %}
   <nav class="mt-4" aria-label="Event pagination">
     <ul class="pagination justify-content-center">
-      <li class="page-item disabled"><span class="page-link">Previous</span></li>
-      <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item"><a class="page-link" href="#">Next</a></li>
+      {% set sep = ('?' ~ base_qs ~ '&') if base_qs else '?' %}
+
+      <li class="page-item {{ not has_prev and 'disabled' or '' }}">
+        <a class="page-link" href="{{ has_prev and (url_for('main.index') ~ sep ~ 'page=' ~ prev_page ~ '&per_page=' ~ per_page) or '#' }}">Previous</a>
+      </li>
+      {% set window = 2 %}
+      {% for p in range(max(1, page - window), min(pages, page + window) + 1) %}
+        <li class="page-item {{ p==page and 'active' or '' }}">
+          <a class="page-link" href="{{ url_for('main.index') ~ sep ~ 'page=' ~ p ~ '&per_page=' ~ per_page }}">{{ p }}</a>
+        </li>
+      {% endfor %}
+
+      <li class="page-item {{ not has_next and 'disabled' or '' }}">
+        <a class="page-link" href="{{ has_next and (url_for('main.index') ~ sep ~ 'page=' ~ next_page ~ '&per_page=' ~ per_page) or '#' }}">Next</a>
+      </li>
     </ul>
   </nav>
+  {% endif %}
 </main>
 {% endblock %}
