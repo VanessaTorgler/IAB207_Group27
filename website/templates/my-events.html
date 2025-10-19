@@ -22,7 +22,14 @@
           <input type="hidden" name="when" value="{{ when_selected }}">
           <input type="hidden" name="format" value="{{ fmt_selected }}">
           <input type="hidden" name="q" value="{{ q_text or '' }}">
-          <input type="hidden" name="status" value="{{ status_selected or 'all' }}">
+          {% for s in status_selected %}
+            <input type="hidden" name="status" value="{{ s }}">
+          {% endfor %}
+
+          {% for c in category_selected %}
+            <input type="hidden" name="category" value="{{ c }}">
+          {% endfor %}
+
           <label for="sort" class="small text-muted mb-0">Sort</label>
           <select id="sort" name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="upcoming" {{ sort_selected=='upcoming' and 'selected' or '' }}>Upcoming
@@ -219,13 +226,31 @@
                             <i class="bi bi-three-dots-vertical"></i>
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
-                            <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View event</a></li>
-                            <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
+                            {% if m.status == 'Inactive' %}
+                              <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                            {% else %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Edit Event</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
+
+                            {% if m.status == 'Inactive' %}
+                              <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
+                            {% endif %}
+                            
+                            {% if m.status != 'Inactive' %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive/Draft</a></li>
+                            {% endif %}
+
+                            {% if m.status != 'Cancelled' %}
+                              {% if m.status == 'Inactive' %}
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
+                              {% else %}
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Cancel Event</a></li>
+                              {% endif %}
+                            {% endif %}
                           </ul>
                         </div>
                       </td>
@@ -267,8 +292,22 @@
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
+
+                            {% if m.status == 'Inactive' %}
+                              <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
+                            {% endif %}
+                            
+                            {% if m.status != 'Inactive' %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive/Draft</a></li>
+                            {% endif %}
+
+                            {% if m.status != 'Cancelled' %}
+                              {% if m.status == 'Inactive' %}
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
+                              {% else %}
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Cancel Event</a></li>
+                              {% endif %}
+                            {% endif %}
                           </ul>
                         </div>
                       </div>
@@ -291,73 +330,103 @@
                       </div>
                     </div>
                   </article>
-
                 </div>
-                <!-- Make Inactive modal -->
-                <div class="modal fade" id="modalInactive-{{ e.id }}" tabindex="-1" aria-labelledby="modalInactiveLabel-{{ e.id }}" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
-                        {% if csrf_token %}{{ csrf_token() }}{% endif %}
-                        <input type="hidden" name="action" value="inactive">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="modalInactiveLabel-{{ e.id }}">Mark event as inactive?</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          <p class="mb-2"><strong>{{ e.title }}</strong></p>
-                          <p class="mb-0 small text-muted">
-                            This will end the event now and hide it from upcoming lists. You can still edit the event later.
-                          </p>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep as is</button>
-                          <button type="submit" class="btn btn-primary">Make Inactive</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Cancel Event modal -->
-                <div class="modal fade" id="modalCancel-{{ e.id }}" tabindex="-1" aria-labelledby="modalCancelLabel-{{ e.id }}" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
-                        {% if csrf_token %}{{ csrf_token() }}{% endif %}
-                        <input type="hidden" name="action" value="cancel">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="modalCancelLabel-{{ e.id }}">Cancel this event?</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          <p class="mb-2"><strong>{{ e.title }}</strong></p>
-                          <p class="mb-0 small text-muted">
-                            Attendees won’t be able to book. Consider notifying existing ticket holders.
-                          </p>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Never mind</button>
-                          <button type="submit" class="btn btn-danger">Cancel Event</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
               {% endfor %}
             </div>
           {% endif %}
+          <!-- Inactive/Cancel Modals -->
+          {% for e in events %}
+            <div class="modal fade" id="modalInactive-{{ e.id }}" tabindex="-1" aria-labelledby="modalInactiveLabel-{{ e.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
+                    {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                    <input type="hidden" name="action" value="inactive">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="modalInactiveLabel-{{ e.id }}">Mark event as inactive?</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="mb-2"><strong>{{ e.title }}</strong></p>
+                      <p class="mb-0 small text-muted">This will hide the event from upcoming lists. You can still edit it later.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep as is</button>
+                      <button type="submit" class="btn btn-primary">Make Inactive</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="modalCancel-{{ e.id }}" tabindex="-1" aria-labelledby="modalCancelLabel-{{ e.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
+                    {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                    <input type="hidden" name="action" value="cancel">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="modalCancelLabel-{{ e.id }}">Cancel this event?</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="mb-2"><strong>{{ e.title }}</strong></p>
+                      <p class="mb-0 small text-muted">Attendees won’t be able to book.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Never mind</button>
+                      <button type="submit" class="btn btn-danger">Cancel Event</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          {# safeguard modal: must inactivate first #}
+          {% for e in events %}
+            <div class="modal fade" id="modalMustInactive-{{ e.id }}" tabindex="-1" aria-labelledby="modalMustInactiveLabel-{{ e.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalMustInactiveLabel-{{ e.id }}">Make event inactive first</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p class="mb-2"><strong>{{ e.title }}</strong></p>
+                    <p class="mb-0 small text-muted">
+                      This action is only available when the event is inactive. Mark it inactive first, then try again.
+                    </p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}" class="m-0">
+                      {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                      <input type="hidden" name="action" value="inactive">
+                      <button type="submit" class="btn btn-primary">Make Inactive</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         {% else %}
           <!-- Empty state -->
           <div class="card empty-state my-4">
             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center p-5">
-              <h2 class="h5 fw-semibold mb-1">You aren’t hosting any events yet</h2>
-              <p class="text-muted mb-3">Kick things off by creating your first event.</p>
-              <a class="btn btn-primary btn-lg"
-                 href="{{ url_for("events.createUpdate") }}">
-                <i class="bi bi-plus-circle me-1"></i> Create your first event
-              </a>
+              {% set filters_active = (q_text or status_selected or category_selected or (price_min is not none) or (price_max is not none)) %}
+              {% if filters_active %}
+                <h2 class="h5 fw-semibold mb-1">No events match your filters</h2>
+                <p class="text-muted mb-3">Try clearing or adjusting your filters.</p>
+                <a class="btn btn-outline-secondary"
+                  href="{{ url_for('events.my_events', view=view, sort=sort_selected) }}">Reset all filters</a>
+              {% else %}
+                <h2 class="h5 fw-semibold mb-1">You aren’t hosting any events yet</h2>
+                <p class="text-muted mb-3">Kick things off by creating your first event.</p>
+                <a class="btn btn-primary btn-lg"
+                  href="{{ url_for("events.createUpdate") }}">
+                  <i class="bi bi-plus-circle me-1"></i> Create your first event
+                </a>
+              {% endif %}
             </div>
           </div>
         {% endif %}
