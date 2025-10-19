@@ -44,9 +44,9 @@
           </div>
 
           <div class="mb-3">
-            <label for="description" class="form-label">Description *</label>
-            <textarea id="description" name="description" value="{{ form.description.data }}" class="form-control"
-              rows="5" required placeholder="What is the event about? Who should attend?"></textarea>
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows="5", placeholder="What is the event about? Who should attend?") }}
+            
           </div>
 
           <div class="row g-3">
