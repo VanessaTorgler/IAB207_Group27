@@ -116,4 +116,7 @@ def create_app():
         from . import events
         app.register_blueprint(events.events_bp)
         
+        #register the 404 error handler
+        from .templates.error import page_not_found
+        app.register_error_handler(404, page_not_found)
         return app

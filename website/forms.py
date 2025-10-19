@@ -26,12 +26,12 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Register")
 
 class CreateEventForm(FlaskForm):
-    title=StringField("Title", validators=[InputRequired(), Length(min=3, max=160)])
-    description=TextAreaField("Description", validators=[InputRequired(), Length(min=3)])
+    title=StringField("Title", validators=[InputRequired(), Length(min=3, max=160, message="Title must be between 3 and 160 characters long.")])
+    description=TextAreaField("Description", validators=[InputRequired(), Length(min=3, message="Description must be at least 3 characters long.")])
     category=SelectField("Category", choices=[('', 'Choose...'),('Tech & AI', 'Tech & AI'), ('Marketing', 'Marketing'), ('Finance', 'Finance'), ('Health', 'Health'), ('Education', 'Education')], validators=[DataRequired(message="Please select a category.")])
     format=SelectField("Format", choices=[('', 'Choose...'),('In-person', 'In-person'), ('Virtual', 'Virtual'), ('Hybrid', 'Hybrid')], validators=[DataRequired(message="Please select a format.")])
     date=DateField("Date", validators=[InputRequired()], format='%Y-%m-%d') 
-    start_time = TimeField("Start Time", format='%H:%M', validators=[InputRequired()]) #getting rid of the 12-hour format because its a struggle to use
+    start_time = TimeField("Start Time", format='%H:%M', validators=[InputRequired()])
     end_time = TimeField("End Time", format='%H:%M', validators=[InputRequired()])
     timezone = SelectField('Timezone', choices=[
         ("(GMT +8:00) Perth", "(GMT +8:00) Perth"),
@@ -76,10 +76,10 @@ class CreateEventForm(FlaskForm):
         ("(GMT +13:00) Apia, Nukualofa", "(GMT +13:00) Apia, Nukualofa"),
         ("(GMT +14:00) Line Islands, Tokelau", "(GMT +14:00) Line Islands, Tokelau"),
     ], default="(GMT +10:00) Brisbane (AEST)")
-    location=StringField("Location", validators=[InputRequired(), Length(min=3, max=200)])
-    capacity=StringField("Capacity", validators=[InputRequired(), Length(min=1, max=8)])
+    location=StringField("Location", validators=[InputRequired(), Length(min=3, max=200, message="Location must be between 3 and 200 characters long.")])
+    capacity=StringField("Capacity", validators=[InputRequired(), Length(min=1, max=8, message="Capacity must be between 1 and 8 characters long.")])
     event_image=FileField("Image", validators=[InputRequired()])
-    image_alt_text=StringField("Image Alt Text", validators=[Length(max=255)])
+    image_alt_text=StringField("Image Alt Text", validators=[Length(max=255, message="Alt Text cannot exceed 255 characters.")])
     ticket_price=DecimalField("Ticket Price", places=2, rounding=None)
     rsvp_closes=DateTimeField("RSVP Closing Date", format='%Y-%m-%dT%H:%M', validators=[InputRequired()])
     host_name=StringField("Host Name", validators=[InputRequired(), Length(min=3, max=120)])

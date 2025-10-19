@@ -14,6 +14,10 @@ events_bp = Blueprint('events', __name__)
 
 @events_bp.route('/event/<int:event_id>', methods=['GET', 'POST'])
 def event(event_id):
+    #if event_id is invalid, redirect to home
+    if event_id not in [eid for (eid,) in db.session.execute(db.select(Event.id)).all()]:
+        flash("Event not found.", "danger")
+        return redirect(url_for('main.index'))
     session['event'] = event_id
     #form = CommentForm() 
     #if form.validate_on_submit():
@@ -45,11 +49,109 @@ def event(event_id):
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
     image_alt_text=imageAltText)
 
+@events_bp.route('/update/<int:event_id>', methods=['GET', 'POST'])
+@login_required
+def update(event_id):
+    query = db.select(Event.id).where(Event.host_user_id==current_user.id)
+    #check if event exists, without telling user if it doesnt
+    if event_id not in [eid for (eid,) in db.session.execute(query).all()]:
+        flash("You do not have permission to edit this event.", "danger")
+        return redirect(url_for('main.index'))
+    #check if current user is host of event
+    if current_user.id != db.session.execute(db.select(Event.host_user_id).where(Event.id==event_id)).scalar_one():
+        flash("You do not have permission to edit this event.", "danger")
+        return redirect(url_for('main.index'))
+    
+    #get event details
+    event = db.session.get(Event, event_id)
+    #get event image details
+    event_image= db.session.get(Event_Image, event_id)
+    #get event tag details
+    event_tag = db.session.get(Event_Tag, event_id)
+    #get ticket type details
+    ticket_type = db.session.get(TicketType, event_id)
+
+    form = CreateEventForm(obj=event)
+    #create form with existing event details manually, as obj=event does not populate fully
+    form.description.data = event.description
+    form.image_alt_text.data = event_image.alt_text
+    tagfind = db.session.execute(
+        db.select(Tag.name).where(Tag.id == event_tag.tag_id)).scalar_one()
+    form.category.data = tagfind
+    form.ticket_price.data = ticket_type.price
+    form.format.data = event.event_type
+    form.timezone.data = event.event_timezone
+    form.date.data = event.start_at.date()
+    form.start_time.data = event.start_at.time()
+    form.end_time.data = event.end_at.time()
+    form.host_name.data = db.session.execute(db.select(User.name).where(User.id==event.host_user_id)).scalar_one()
+    form.host_contact.data = db.session.execute(db.select(User.email).where(User.id==event.host_user_id)).scalar_one()
+    form.location.data = event.location_text
+    #image not populated for security reasons
+
+
+    if form.validate_on_submit():
+        #delete old image
+        old_image_path = event_image.url
+        if old_image_path:
+            old_image_full_path = os.path.join(os.path.dirname(__file__), old_image_path.lstrip("/"))
+            if os.path.exists(old_image_full_path):
+                os.remove(old_image_full_path)
+
+            
+        #upload new image
+        db_file_path = check_upload_file(form)
+
+        start_dt = datetime.combine(form.date.data, form.start_time.data)
+        end_dt   = datetime.combine(form.date.data, form.end_time.data)
+        #update event details
+        event.title = form.title.data
+        event.description =  form.description.data
+        event.event_type = form.format.data
+        event.event_timezone = form.timezone.data
+        event.start_at = start_dt
+        event.rsvp_closes = form.rsvp_closes.data
+        event.end_at = end_dt
+        event.location_text = form.location.data
+        event.capacity = form.capacity.data
+        event_image.url = db_file_path
+        event_image.alt_text = form.image_alt_text.data
+        #update event tag details
+        tagfind = db.session.execute(
+            db.select(Tag).where(Tag.name == form.category.data)
+        ).scalar_one()
+        event_tag.tag_id = tagfind.id
+        #update ticket type details
+        ticket_type.is_free = (form.ticket_price.data == 0)
+        ticket_type.price = form.ticket_price.data
+        ticket_type.capacity = event.capacity
+        ticket_type.sales_end_at = event.rsvp_closes
+        
+        db.session.add(event)
+        db.session.add(event_image)
+        db.session.add(event_tag)
+        db.session.add(ticket_type)
+        db.session.commit()
+        flash(f"Successfully created event. You can <a href='{url_for('events.createUpdate')}' class='alert-link'>host another event</a> "
+        f"or <a href='{url_for('events.event', event_id=event.id)}' class='alert-link'>visit it</a>.",
+        "success")
+        return redirect(url_for('main.index'))
+    
+    print(form.errors)
+    return render_template('create-update.html', active_page='create-update', form=form)
+
+
 @events_bp.route('/create-update', methods=['GET', 'POST'])
 @login_required
 def createUpdate():
     form = CreateEventForm()
+    #clear form data (due to formdate=None filling entries with None)
+    for field in form:
+        if field.data is None:
+            field.data = ""
+   
     if form.validate_on_submit():
+        #get and save image
         db_file_path = check_upload_file(form)
         print("Form Submitted!")
         print(
@@ -62,6 +164,7 @@ def createUpdate():
         start_dt = datetime.combine(form.date.data, form.start_time.data)
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
 
+        #create event entry
         event = Event(
             host_user_id=current_user.id,
             title=form.title.data,
@@ -77,6 +180,7 @@ def createUpdate():
         db.session.add(event)
         db.session.flush()
 
+        #create event image entry
         event_img = Event_Image(
             event_id=event.id,
             url=db_file_path,
@@ -87,11 +191,12 @@ def createUpdate():
             db.select(Tag).where(Tag.name == form.category.data)
         ).scalar_one()
 
+        #create event tag entry
         event_tag = Event_Tag(
             event_id=event.id,
             tag_id=tagfind.id
         )
-
+        #create ticket type entry
         ticket_type = TicketType(
             event_id=event.id,
             name="General Admission",
@@ -111,6 +216,7 @@ def createUpdate():
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
         form = CreateEventForm(formdata=None)
+        #create an alert with links to create another event or view the created event
         flash(f"Successfully created event. You can <a href='{url_for('events.createUpdate')}' class='alert-link'>host another event</a> "
         f"or <a href='{url_for('events.event', event_id=event.id)}' class='alert-link'>visit it</a>.",
         "success")

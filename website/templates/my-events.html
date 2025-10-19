@@ -263,7 +263,7 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
-                            <li><a class="dropdown-item" href="#">Edit Event</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
