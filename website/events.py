@@ -117,3 +117,171 @@ def createUpdate():
         return redirect(url_for('main.index'))
     print(form.errors)
     return render_template('create-update.html', active_page='create-update', form=form)
+
+@events_bp.route("/my-events")
+@login_required
+def my_events():
+    # read query params
+    view  = (request.args.get("view") or "grid").strip()
+    when_ = (request.args.get("when") or "upcoming").strip()
+    fmt   = (request.args.get("format") or "").strip()
+    sort  = (request.args.get("sort") or "upcoming").strip()
+
+    # filters (new)
+    q_text            = (request.args.get("q") or "").strip()
+    price_min         = request.args.get("price_min", type=float)
+    price_max         = request.args.get("price_max", type=float)
+    status_selected   = request.args.getlist("status")
+    category_selected = request.args.getlist("category")
+
+    # base query with metrics
+    qry = (
+        db.session.query(
+            Event,
+            func.min(cast(TicketType.price, Float)).label("min_price"),
+            func.count(Booking.booking_id).label("sold_count"),
+        )
+        .outerjoin(TicketType, TicketType.event_id == Event.id)
+        .outerjoin(Booking, Booking.event_id == Event.id)
+        .filter(Event.host_user_id == current_user.id)
+        .group_by(Event.id)
+    )
+
+    now_utc = datetime.now(timezone.utc)
+
+    if when_ == "upcoming":
+        qry = qry.filter((Event.start_at == None) | (Event.start_at >= now_utc))
+    elif when_ == "past":
+        qry = qry.filter((Event.end_at != None) & (Event.end_at < now_utc))
+
+    if fmt:
+        qry = qry.filter(Event.event_type == fmt)
+
+    # sorting
+    if sort == "upcoming":
+        qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
+    elif sort == "created":
+        qry = qry.order_by(Event.created_at.desc())
+    elif sort == "title":
+        qry = qry.order_by(func.lower(Event.title).asc())
+    else:
+        qry = qry.order_by((Event.start_at == None).asc(), Event.start_at.asc())
+
+    rows = qry.all()
+
+    # metrics/status for all rows
+    metrics = {}
+    for e, mp, sold in rows:
+        status = "Open"
+        if e.cancelled:
+            status = "Cancelled"
+        elif not getattr(e, "is_active", True):
+            status = "Inactive"
+        else:
+            end_at = e.end_at
+            if end_at is not None:
+                if end_at.tzinfo is None:
+                    end_at = end_at.replace(tzinfo=timezone.utc)
+                if end_at <= now_utc:
+                    status = "Inactive"
+            if status == "Open" and e.capacity is not None and (sold or 0) >= e.capacity:
+                status = "Sold Out"
+
+        metrics[e.id] = {
+            "min_price": float(mp or 0.0),
+            "sold": int(sold or 0),
+            "status": status,
+        }
+
+    # categories list
+    all_categories = [name for (name,) in db.session.query(Tag.name).order_by(Tag.name).all()]
+
+    # tags map
+    tags_by_event_all: dict[int, list[str]] = {}
+    if rows:
+        all_event_ids = [e.id for (e, _, _) in rows]
+        tag_rows = (
+            db.session.query(Event_Tag.event_id, Tag.name)
+            .join(Tag, Tag.id == Event_Tag.tag_id)
+            .filter(Event_Tag.event_id.in_(all_event_ids))
+            .all()
+        )
+        for eid, name in tag_rows:
+            tags_by_event_all.setdefault(eid, []).append(name)
+
+    # apply filters (search, status multi, category multi, price range)
+    filtered_events = []
+    status_allow_set = {s.lower().replace(" ", "") for s in status_selected} if status_selected else set()
+
+    for e, _, _ in rows:
+        m = metrics[e.id]
+
+        # search
+        if q_text and q_text.lower() not in (e.title or "").lower():
+            continue
+
+        # status (OR)
+        if status_allow_set and m["status"].lower().replace(" ", "") not in status_allow_set:
+            continue
+
+        # categories (OR)
+        if category_selected:
+            ev_cats = set(tags_by_event_all.get(e.id, []))
+            if not ev_cats.intersection(category_selected):
+                continue
+
+        # price range
+        if price_min is not None and m["min_price"] < price_min:
+            continue
+        if price_max is not None and m["min_price"] > price_max:
+            continue
+
+        filtered_events.append(e)
+
+    events = filtered_events
+
+    # tags map for displayed events only
+    tags_map: dict[int, list[str]] = {e.id: tags_by_event_all.get(e.id, []) for e in events}
+
+    return render_template(
+        "my-events.html",
+        active_page="my-events",
+        events=events,
+        view=view,
+        when_selected=when_,
+        fmt_selected=fmt,
+        sort_selected=sort,
+        metrics=metrics,
+        tags_map=tags_map,
+        q_text=q_text,
+        price_min=price_min,
+        price_max=price_max,
+        status_selected=status_selected,
+        category_selected=category_selected,
+        all_categories=all_categories,
+    )
+
+@events_bp.post("/event/<int:event_id>/action")
+@login_required
+def event_action(event_id):
+    action = (request.form.get("action") or "").strip()
+    e = db.session.get(Event, event_id)
+    if not e or e.host_user_id != current_user.id:
+        flash("Event not found.", "danger")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    now_utc = datetime.now(timezone.utc)
+
+    if action == "cancel":
+        e.cancelled = True
+        flash("Event has been cancelled.", "warning")
+    elif action == "inactive":
+        e.is_active = False
+        flash("Event marked as inactive.", "info")
+    else:
+        flash("Unknown action.", "danger")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    db.session.commit()
+    # preserve current view if present
+    return redirect(url_for("events.my_events", view=request.args.get("view", "table")))

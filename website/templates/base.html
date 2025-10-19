@@ -19,7 +19,6 @@
     href="#main">Skip to content</a>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-    <!-- Your navbar should go here -->
     <div class="container">
       <!-- Brand -->
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('main.index') }}">
@@ -47,9 +46,15 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link  {% if active_page == 'bookinghistory' %}active{% endif %}"
+            <a class="nav-link {% if active_page == 'bookinghistory' %}active{% endif %}"
               href="{{ url_for('bookings.booking_history') }}">
               <i class="bi bi-clock-history me-1"></i> Booking History
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'my-events' %}active{% endif %}"
+              href="{{ url_for('events.my_events') }}">
+              <i class="bi bi-calendar-event me-1"></i> My Events
             </a>
           </li>
 

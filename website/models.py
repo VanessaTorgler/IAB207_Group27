@@ -1,7 +1,7 @@
 from . import db
 from datetime import datetime
 from flask_login import UserMixin
-from sqlalchemy import Numeric, func, CheckConstraint, Enum as SAEnum, Index
+from sqlalchemy import Numeric, func, CheckConstraint, Enum as SAEnum, Index, text, Boolean
 import enum
 
 # enums for Booking status, instead of storing them as strings
@@ -61,6 +61,7 @@ class Event(TimestampMixin, db.Model):
     join_url_release_at = db.Column(db.DateTime(timezone=True))
     capacity = db.Column(db.Integer)
     cancelled = db.Column(db.Boolean, default=False, nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False, server_default=text("1"))
     # ... Create the Comments db.relationship
 	# relation to call destination.comments and comment.destination
     comments = db.relationship('Comment', back_populates='event', cascade='all, delete-orphan', passive_deletes=True)
