@@ -141,7 +141,7 @@ def update(event_id):
     return render_template('create-update.html', active_page='create-update', form=form)
 
 
-@events_bp.route('/create-update', methods=['GET', 'POST'])
+@events_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def createUpdate():
     form = CreateEventForm()
