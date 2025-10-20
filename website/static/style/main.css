@@ -201,3 +201,26 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 /* Compact filter zone */
 .filters-compact .form-label { margin-bottom: .25rem; font-size: .9rem; }
 .filters-compact .btn       { font-size: .95rem; padding: .375rem .6rem; }
+
+
+/* Add a red asterisk to required fields */
+.form-label:has(+ input[required]),
+.form-label:has(+ select[required]),
+.form-label:has(+ textarea[required]) {
+  position: relative;
+}
+
+.form-label:has(+ input[required])::after,
+.form-label:has(+ select[required])::after,
+.form-label:has(+ textarea[required])::after {
+  content: " *";
+  color: var(--bs-danger);
+  margin-left: .25rem;
+}
+
+@media (min-width: 1200px) {
+  .card .form-control {
+    max-width: 520px;
+  }
+  .col-xl-4 .form-control { max-width: 360px; }
+}

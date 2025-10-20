@@ -32,6 +32,10 @@ class User(TimestampMixin, db.Model, UserMixin):
     name = db.Column(db.String(120), index=True, unique=True, nullable=False)
     email = db.Column(db.String(254), index=True, nullable=False, unique=True)
     mobile = db.Column(db.String(32), index=True)
+    first_name = db.Column(db.String(80))
+    last_name = db.Column(db.String(80))
+    street_address = db.Column(db.String(160))
+    profile_pic_path = db.Column(db.String(255))
 	# password should never stored in the DB, an encrypted password is stored
 	# the storage should be at least 255 chars long, depending on your hashing algorithm
     password_hash = db.Column(db.String(255), nullable=False)

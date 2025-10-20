@@ -6,7 +6,6 @@ from flask_login import LoginManager
 from sqlalchemy import event, MetaData, inspect
 from sqlalchemy.engine import Engine
 
-
 convention = {
     "ix": "ix_%(table_name)s_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -26,14 +25,6 @@ def set_sqlite_pragma(dbapi_conn, connection_record):
         cursor.close()
     except Exception:
         pass
-    
-
-def _ensure_sqlite_column(engine, table: str, column: str, ddl: str):
-    insp = inspect(engine)
-    cols = {c["name"] for c in insp.get_columns(table)}
-    if column not in cols:
-        with engine.begin() as conn:
-            conn.exec_driver_sql(ddl)
 
 # create a function that creates a web application
 # a web server will run this web application
@@ -47,20 +38,19 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sitedata.sqlite'
     # turn off deprecation warnings
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # set maximum file size of uploads
+    app.config.setdefault('MAX_CONTENT_LENGTH', 2 * 1024 * 1024)
     # initialise db with flask app
     db.init_app(app)
     # import all models
     from . import models
     #create the db tables and add tags. uncomment if you make changes to models.py
     with app.app_context():
-        from . import models
         db.create_all()   
-        _ensure_sqlite_column(
-            db.engine,
-            table="events",
-            column="is_active",
-            ddl="ALTER TABLE events ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"
-        )
+        # run lightweight, idempotent schema checks/patches (no migrations)
+        from .schema_check import ensure_schema, ensure_upload_dirs
+        ensure_schema(db.engine)
+        ensure_upload_dirs(app.static_folder)
       
         from .models import Tag
         tag1 = Tag(name="Tech & AI")
@@ -76,8 +66,8 @@ def create_app():
             # check if each tag exists
             check_existing = db.session.execute(db.select(Tag).where(Tag.name == each.name)).scalar()
 
-            if app.debug == True:
-                print("Tag check: " + str(check_existing))
+            # if app.debug == True:
+            #     print("Tag check: " + str(check_existing))
 
             # if it doesn't, add it
             if check_existing == None:

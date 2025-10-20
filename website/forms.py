@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import TextAreaField, SubmitField, StringField, PasswordField, DateField, TimeField, FileField, DecimalField, SelectField, DateTimeField
+from wtforms.fields import TextAreaField, SubmitField, StringField, PasswordField, DateField, TimeField, FileField, DecimalField, SelectField, DateTimeField, BooleanField
 from datetime import datetime
+from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, InputRequired, ValidationError
 from werkzeug.utils import secure_filename
-from wtforms.validators import InputRequired, Length, Email, EqualTo, DataRequired, ValidationError
+from flask_wtf.file import FileAllowed
 import os, time, uuid
 
 # creates the login information
@@ -13,14 +14,19 @@ class LoginForm(FlaskForm):
 class CommentForm(FlaskForm):
     comment=TextAreaField("Comment", validators=[InputRequired(), Length(min=1, max=500)])
     submit = SubmitField("Post Comment")
+    
  # this is the registration form
 class RegisterForm(FlaskForm):
     user_name=StringField("User Name", validators=[InputRequired()])
-    email = StringField("Email Address", validators=[Email("Please enter a valid email")])
+    email = StringField("Email Address", validators=[DataRequired(), Email("Please enter a valid email")])
     # linking two fields - password should be equal to data entered in confirm
-    password=PasswordField("Password", validators=[InputRequired(),
-                  EqualTo('confirm', message="Passwords should match")])
-    confirm = PasswordField("Confirm Password")
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=36)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
+    first_name = StringField('First Name', validators=[DataRequired(), Length(max=80)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(max=80)])
+    contact_number = StringField('Contact Number', validators=[DataRequired(), Length(max=32)])
+    street_address = StringField('Street Address', validators=[DataRequired(), Length(max=160)])
+    profile_pic = FileField('Profile Picture (optional)', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only')])
 
     # submit button
     submit = SubmitField("Register")
@@ -134,3 +140,24 @@ def check_upload_file(form):
     # save the file and return the db upload path  
     fp.save(upload_path)
     return f"/static/uploads/{unique_name}"
+
+
+class ProfileForm(FlaskForm):
+    # keep validations consistent with registration
+    user_name = StringField('User Name', validators=[DataRequired(), Length(max=120)])
+    email = StringField('Email Address', validators=[DataRequired(), Email(), Length(max=254)])
+    first_name = StringField('First Name', validators=[DataRequired(), Length(max=80)])
+    last_name  = StringField('Last Name',  validators=[DataRequired(), Length(max=80)])
+    contact_number = StringField('Contact Number', validators=[DataRequired(), Length(max=32)])
+    street_address = StringField('Street Address', validators=[DataRequired(), Length(max=160)])
+
+    current_password = PasswordField('Current Password', validators=[Optional()])
+    new_password = PasswordField('New Password', validators=[Optional(), Length(min=8, max=36)])
+    confirm_new_password = PasswordField('Confirm New Password',
+                                         validators=[Optional(), EqualTo('new_password', message='Passwords must match')])
+
+    # profile pic controls
+    profile_pic = FileField('Replace Profile Picture',
+                            validators=[Optional(), FileAllowed(['jpg','jpeg','png','gif'], 'Images only')])
+    remove_profile_pic = BooleanField('Remove current picture')
+    submit = SubmitField('Save changes')
