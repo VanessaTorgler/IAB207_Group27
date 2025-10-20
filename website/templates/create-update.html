@@ -122,7 +122,7 @@
           <div class="mt-3">
             <label for="image" class="form-label">Event image *</label>
             <input id="image" name="event_image" type="file" value="{{ form.event_image.data }}" class="form-control"
-              accept="image/*" required>
+              accept="image/*" {% if is_create %}required{% endif %}>
             <div class="form-text">JPEG/PNG recommended. Appears on the event card and details page.</div>
           </div>
           <div class="mt-3">
