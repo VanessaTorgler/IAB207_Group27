@@ -299,11 +299,13 @@
         <a class="page-link" href="{{ has_prev and (url_for('main.index') ~ sep ~ 'page=' ~ prev_page ~ '&per_page=' ~ per_page) or '#' }}">Previous</a>
       </li>
       {% set window = 2 %}
-      {% for p in range(max(1, page - window), min(pages, page + window) + 1) %}
-        <li class="page-item {{ p==page and 'active' or '' }}">
-          <a class="page-link" href="{{ url_for('main.index') ~ sep ~ 'page=' ~ p ~ '&per_page=' ~ per_page }}">{{ p }}</a>
-        </li>
-      {% endfor %}
+        {% for p in range(start_page, end_page + 1) %}
+          <li class="page-item {{ p==page and 'active' or '' }}">
+            <a class="page-link"
+              href="{{ url_for('main.index') ~ sep ~ 'page=' ~ p ~ '&per_page=' ~ per_page }}">{{ p }}</a>
+          </li>
+        {% endfor %}
+
 
       <li class="page-item {{ not has_next and 'disabled' or '' }}">
         <a class="page-link" href="{{ has_next and (url_for('main.index') ~ sep ~ 'page=' ~ next_page ~ '&per_page=' ~ per_page) or '#' }}">Next</a>
