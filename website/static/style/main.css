@@ -196,3 +196,8 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 .table .truncate-col a.text-reset:hover{text-decoration:underline;}
 
 .modal .btn-danger { font-weight: 600; }
+
+
+/* Compact filter zone */
+.filters-compact .form-label { margin-bottom: .25rem; font-size: .9rem; }
+.filters-compact .btn       { font-size: .95rem; padding: .375rem .6rem; }
