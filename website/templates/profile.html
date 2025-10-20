@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "bootstrap5/form.html" import render_field %}
+
+{% block title %}<title>Bondra – Profile</title>{% endblock %}
+
+{% block header %}
+<div class="container">
+  <h1 class="h3 mb-0">Your profile</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<main id="main" class="container py-4">
+  <form method="post" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data" novalidate>
+    {{ form.csrf_token }}
+
+    <div class="row g-4">
+      <!-- Left: Profile Pic -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm border-0 align-self-start">
+          <div class="card-body p-4 d-flex flex-column align-items-center">
+            {% if user.profile_pic_path %}
+              <img
+                src="{{ url_for('static', filename=user.profile_pic_path) }}"
+                alt="Profile picture"
+                class="rounded-circle img-thumbnail mb-3 d-block mx-auto"
+                style="width:140px;height:140px;object-fit:cover;"
+              >
+            {% else %}
+              <div
+                class="rounded-circle bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center mx-auto mb-3"
+                style="width:140px;height:140px;"
+              >
+                <span class="text-secondary">No photo</span>
+              </div>
+            {% endif %}
+
+            <p class="text-muted small mb-3 text-center">
+              {% if user.profile_pic_path %}
+                Upload a new photo to replace the current one, or remove it.
+              {% else %}
+                Upload a profile picture (optional).
+              {% endif %}
+            </p>
+
+            <div class="w-100" style="max-width:360px;">
+              {{ render_field(form.profile_pic) }}
+              {% if user.profile_pic_path %}
+                <div class="form-check mt-2">
+                  {{ form.remove_profile_pic(class="form-check-input", id="removePic") }}
+                  <label class="form-check-label" for="removePic">Remove current picture</label>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Details -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+
+            <h2 class="h6 text-uppercase text-muted mb-3">Account</h2>
+            <div class="row g-3">
+              <div class="col-md-6 col-xl-4">
+                {{ render_field(form.user_name) }}
+              </div>
+              <div class="col-md-6 col-xl-6">
+                {{ render_field(form.email) }}
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h2 class="h6 text-uppercase text-muted mb-3">Personal info</h2>
+            <div class="row g-3">
+              <div class="col-md-6 col-xl-4">
+                {{ render_field(form.first_name) }}
+              </div>
+              <div class="col-md-6 col-xl-4">
+                {{ render_field(form.last_name) }}
+              </div>
+              <div class="col-md-6 col-xl-4">
+                {{ render_field(form.contact_number, placeholder='Optional') }}
+              </div>
+              <div class="col-12 col-xl-8">
+                {{ render_field(form.street_address, placeholder='Optional') }}
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h2 class="h6 text-uppercase text-muted mb-2">Password</h2>
+            <p class="text-muted small mb-3">Leave blank to keep your current password.</p>
+            <div class="row g-3">
+              <div class="col-md-6 col-xl-4">{{ render_field(form.current_password) }}</div>
+              <div class="col-md-6 col-xl-4">{{ render_field(form.new_password) }}</div>
+              <div class="col-md-6 col-xl-4">{{ render_field(form.confirm_new_password) }}</div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary">{{ form.submit.label.text or 'Save changes' }}</button>
+              <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Back</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</main>
+{% endblock %}
