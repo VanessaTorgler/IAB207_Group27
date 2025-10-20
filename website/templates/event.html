@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+
+{% from 'bootstrap5/form.html' import render_form %}
+
 {% block title %}
 <title>Bondra – Event Details</title>
 {% endblock %}
@@ -109,7 +112,17 @@
           <span id="commentsHeading" class="fw-semibold">Comments</span>
           <span class="text-muted small"><strong>3</strong> comments • Visible to everyone</span>
         </div>
-        <div class="card-body">
+        <div class ="card-body">
+          {{ render_form(form, '/event/{0}'.format(event_id)) }}
+      
+          {% for comment in event.comments %}
+          <div class="col-md-12">  
+            <b>{{ comment.user.name }} <span class="ml-2 text-muted">date</span></b>
+            <p>{{ comment.body }}</p>  
+        </div> 
+      {% endfor %} 
+        </div>
+        <!-- <div class="card-body">
           <article class="d-flex gap-3 mb-3">
             <img class="rounded-circle comment-avatar" src="../static/img/aisha.jpg" alt="Aisha avatar" width="40"
               height="40">
@@ -135,7 +148,7 @@
               <div class="fw-semibold">Mia (Host)</div>
               <div class="text-muted small">Posted 03 Sep 2025</div>
               <p class="mb-0">Yes—parking under the convention centre; veg &amp; GF options included.</p>
-            </div>
+            </div> -->
           </article>
         </div>
       </div>
