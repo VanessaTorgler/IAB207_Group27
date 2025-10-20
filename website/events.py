@@ -72,6 +72,7 @@ def update(event_id):
     ticket_type = db.session.get(TicketType, event_id)
 
     form = CreateEventForm(obj=event)
+    form.event_image.validators = []
     #create form with existing event details manually, as obj=event does not populate fully
     form.description.data = event.description
     form.image_alt_text.data = event_image.alt_text
@@ -91,16 +92,18 @@ def update(event_id):
 
 
     if form.validate_on_submit():
-        #delete old image
-        old_image_path = event_image.url
-        if old_image_path:
-            old_image_full_path = os.path.join(os.path.dirname(__file__), old_image_path.lstrip("/"))
-            if os.path.exists(old_image_full_path):
-                os.remove(old_image_full_path)
-
-            
-        #upload new image
-        db_file_path = check_upload_file(form)
+        if form.event_image.data:
+            #delete old image
+            old_image_path = event_image.url
+            if old_image_path:
+                old_image_full_path = os.path.join(os.path.dirname(__file__), old_image_path.lstrip("/"))
+                if os.path.exists(old_image_full_path):
+                    os.remove(old_image_full_path)
+            #upload new image
+            db_file_path = check_upload_file(form)  
+            event_image.url = db_file_path
+        else:
+            form.event_image.data = db.session.execute(db.select(Event_Image.url).where(Event_Image.event_id==event.id)).scalar_one()
 
         start_dt = datetime.combine(form.date.data, form.start_time.data)
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
@@ -114,7 +117,6 @@ def update(event_id):
         event.end_at = end_dt
         event.location_text = form.location.data
         event.capacity = form.capacity.data
-        event_image.url = db_file_path
         event_image.alt_text = form.image_alt_text.data
         #update event tag details
         tagfind = db.session.execute(
@@ -138,7 +140,7 @@ def update(event_id):
         return redirect(url_for('main.index'))
     
     print(form.errors)
-    return render_template('create-update.html', active_page='create-update', form=form)
+    return render_template('create-update.html', active_page='create-update', form=form, is_create=False)
 
 
 @events_bp.route('/create', methods=['GET', 'POST'])
@@ -222,7 +224,7 @@ def createUpdate():
         "success")
         return redirect(url_for('main.index'))
     print(form.errors)
-    return render_template('create-update.html', active_page='create-update', form=form)
+    return render_template('create-update.html', active_page='create-update', form=form, is_create=True)
 
 @events_bp.route("/my-events")
 @login_required
