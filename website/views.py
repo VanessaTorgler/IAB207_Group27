@@ -120,6 +120,10 @@ def index():
     start = (page - 1) * per_page
     end   = start + per_page
     page_items = enriched[start:end]
+    
+    window = 2
+    start_page = max(1, page - window)
+    end_page   = min(pages, page + window)
 
     base_params = request.args.to_dict()
     base_params.pop('page', None)
@@ -150,6 +154,8 @@ def index():
         next_page=(page + 1),
         base_params=base_params,
         base_qs=base_qs,
+        start_page=start_page,
+        end_page=end_page,
     )
 
 # @main_bp.route('/bookinghistory')
