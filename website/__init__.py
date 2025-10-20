@@ -1,8 +1,9 @@
 # import flask - from 'package' import 'Class'
-from flask import Flask 
+from flask import Flask
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf import CSRFProtect
 from sqlalchemy import event, MetaData, inspect
 from sqlalchemy.engine import Engine
 
@@ -16,6 +17,9 @@ convention = {
 
 db = SQLAlchemy(metadata=MetaData(naming_convention=convention))
 
+# Enable CSRF for Flask‑WTF forms
+csrf = CSRFProtect()
+
 # turn on foreign key constraints so certain rules can operate
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_conn, connection_record):
@@ -26,87 +30,75 @@ def set_sqlite_pragma(dbapi_conn, connection_record):
     except Exception:
         pass
 
-# create a function that creates a web application
-# a web server will run this web application
+def _ensure_sqlite_column(engine, table: str, column: str, ddl: str):
+    insp = inspect(engine)
+    cols = {c["name"] for c in insp.get_columns(table)}
+    if column not in cols:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(ddl)
+
+# App factory: enable CSRF and register bookings blueprint (no other changes).
 def create_app():
-  
-    app = Flask(__name__)  # this is the name of the module/package that is calling this app
-    # Should be set to false in a production environment
+    app = Flask(__name__)
     app.debug = True
     app.secret_key = 'somesecretkey'
-    # set the app configuration data 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sitedata.sqlite'
-    # turn off deprecation warnings
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    # set maximum file size of uploads
-    app.config.setdefault('MAX_CONTENT_LENGTH', 2 * 1024 * 1024)
-    # initialise db with flask app
+
+    # init extensions
     db.init_app(app)
-    # import all models
+    csrf.init_app(app)
+    Bootstrap5(app)
+
+    # import models so tables are known
     from . import models
-    #create the db tables and add tags. uncomment if you make changes to models.py
+
     with app.app_context():
-        db.create_all()   
-        # run lightweight, idempotent schema checks/patches (no migrations)
-        from .schema_check import ensure_schema, ensure_upload_dirs
-        ensure_schema(db.engine)
-        ensure_upload_dirs(app.static_folder)
-      
+        db.create_all()
+        _ensure_sqlite_column(
+            db.engine,
+            table="events",
+            column="is_active",
+            ddl="ALTER TABLE events ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"
+        )
+
+        # seed Tags if missing
         from .models import Tag
-        tag1 = Tag(name="Tech & AI")
-        tag2 = Tag(name="Marketing")
-        tag3 = Tag(name="Finance")
-        tag4 = Tag(name="Health")
-        tag5 = Tag(name="Education")
-
-        # fix for tags breaking on startup
-        tags_array = [tag1, tag2, tag3, tag4, tag5]
-
-        for each in tags_array:
-            # check if each tag exists
-            check_existing = db.session.execute(db.select(Tag).where(Tag.name == each.name)).scalar()
-
-            # if app.debug == True:
-            #     print("Tag check: " + str(check_existing))
-
-            # if it doesn't, add it
-            if check_existing == None:
-                if app.debug == True:
-                    print("Tag added: " + str(each))
-                #add_tag = Tag(name = each)
-                db.session.add(each)
-
-        #db.session.add_all([tag1, tag2, tag3, tag4, tag5])
+        for name in ["Tech & AI", "Marketing", "Finance", "Health", "Education"]:
+            exists = db.session.execute(db.select(Tag).where(Tag.name == name)).scalar()
+            if not exists:
+                db.session.add(Tag(name=name))
         db.session.commit()
-        Bootstrap5(app)
-        
-        # initialise the login manager
-        login_manager = LoginManager()
-        
-        # set the name of the login function that lets user login
-        # in our case it is auth.login (blueprintname.viewfunction name)
-        login_manager.login_view = 'auth.login'
-        login_manager.init_app(app)
-        # create a user loader function takes userid and returns User
-        # Importing inside the create_app function avoids circular references
-        from .models import User
-        @login_manager.user_loader
-        def load_user(user_id):
-            return db.session.scalar(db.select(User).where(User.id==user_id))
 
-        from . import views
-        app.register_blueprint(views.main_bp)
+    # Login manager
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
 
-        from . import auth
-        app.register_blueprint(auth.auth_bp)
+    from .models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return db.session.scalar(db.select(User).where(User.id == user_id))
 
-        from . import bookings
-        app.register_blueprint(bookings.bookings_bp)
+    # Blueprints
+    from . import views
+    app.register_blueprint(views.main_bp)
 
-        from . import events
-        app.register_blueprint(events.events_bp)
-        
-        #register the 404 error handler
+    from . import auth
+    app.register_blueprint(auth.auth_bp)
+
+    # Your repo already has bookings.py — register its blueprint
+    from . import bookings
+    app.register_blueprint(bookings.bookings_bp)
+
+    from . import events
+    app.register_blueprint(events.events_bp)
+
+    # (If you keep custom 404s elsewhere, you can still register them here)
+    try:
         from .templates.error import page_not_found
         app.register_error_handler(404, page_not_found)
-        return app
+    except Exception:
+        pass
+
+    return app

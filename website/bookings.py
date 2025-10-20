@@ -27,7 +27,7 @@ def booking_history():
     rows = (
         db.session.query(Booking)
         .filter(Booking.user_id == current_user.id)
-        .order_by(Booking.booked_on.desc())
+        .order_by(Booking.created_at.desc())
         .all()
     )
     def fmt(dt, s):
@@ -49,8 +49,8 @@ def booking_history():
             "date_short": fmt(start_at, '%d %b %Y'),
             "location_short": getattr(e, "location_text", None) or getattr(e, "location", "") or "",
             "booking_id": getattr(r, "public_id", None) or str(getattr(r, "id", "")),
-            "booked_on_line": fmt(getattr(r, "booked_on", None), '%a, %d %b %Y • %-I:%M %p'),
-            "booked_on_short": fmt(getattr(r, "booked_on", None), '%d %b %Y • %-I:%M %p'),
+            "booked_on_line": fmt(getattr(r, "created_at", None), '%a, %d %b %Y • %-I:%M %p'),
+            "booked_on_short": fmt(getattr(r, "created_at", None), '%d %b %Y • %-I:%M %p'),
             "tickets": getattr(r, "quantity", 1),
             "status": _status_for(e),
             "cancellable": _status_for(e) == "Open",

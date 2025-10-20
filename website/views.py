@@ -28,10 +28,10 @@ def index():
     price_max = request.args.get('price_max', type=float)
     sort = (request.args.get('sort') or 'dateSoonest').strip()
 
-    status_filter = (request.args.get('status') or '').strip() 
+    status_filter = (request.args.get('status') or '').strip()
     page      = max((request.args.get('page', 1, type=int) or 1), 1)
-    per_page  = request.args.get('per_page', 9, type=int) 
-    
+    per_page  = request.args.get('per_page', 9, type=int)
+
     # subquery: MIN(ticket price) per event
     price_sq = (
         db.session.query(
@@ -120,7 +120,7 @@ def index():
     start = (page - 1) * per_page
     end   = start + per_page
     page_items = enriched[start:end]
-    
+
     window = 2
     start_page = max(1, page - window)
     end_page   = min(pages, page + window)
@@ -128,9 +128,7 @@ def index():
     base_params = request.args.to_dict()
     base_params.pop('page', None)
     base_params.pop('per_page', None)
-    
     base_params = {k: v for k, v in base_params.items() if v not in (None, '', [])}
-    base_qs = urlencode(base_params)
 
     return render_template(
         'index.html',
@@ -143,7 +141,6 @@ def index():
         sort_selected=sort,
         fmt_selected=fmt,
         status_selected=status_filter,
-
         page=page,
         per_page=per_page,
         total=total,
@@ -153,28 +150,17 @@ def index():
         prev_page=(page - 1),
         next_page=(page + 1),
         base_params=base_params,
-        base_qs=base_qs,
         start_page=start_page,
         end_page=end_page,
     )
 
-# @main_bp.route('/bookinghistory')
-# @login_required
-# def bookingHistory():
-#     # Keep the original URL but serve the dynamic booking history from the new blueprint
-#     return redirect(url_for('bookings.booking_history'))
+# Legacy redirect: keep old links working
+@main_bp.route('/bookinghistory')
+def bookingHistory():
+    return redirect(url_for('bookings.booking_history'))
 
 @main_bp.route('/search')
 def search_events():
-    """
-    Supports:
-      q           : text search (title/description)
-      category    : Tag.name (e.g., 'Tech & AI', 'Marketing', ...)
-      format      : Event.event_type ('In-person' | 'Virtual' | 'Hybrid')
-      price_min   : minimum ticket price
-      price_max   : maximum ticket price
-      sort        : relevance | dateSoonest | priceLowHigh | priceHighLow | popularity
-    """
     q_text     = (request.args.get('q') or '').strip()
     category   = (request.args.get('category') or '').strip()
     fmt        = (request.args.get('format') or '').strip()
@@ -189,7 +175,6 @@ def search_events():
            )
            .outerjoin(TicketType, TicketType.event_id == Event.id)
            .outerjoin(Booking, Booking.event_id == Event.id)
-           # join tags so category can match Tag.name
            .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
            .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
            .group_by(Event.id))
@@ -197,15 +182,10 @@ def search_events():
     if q_text:
         ilike = f"%{q_text}%"
         qry = qry.filter(or_(Event.title.ilike(ilike), Event.description.ilike(ilike)))
-
-    # Category ->
     if category:
         qry = qry.filter(Tag.name == category)
-
-    # Format 
     if fmt:
         qry = qry.filter(Event.event_type == fmt)
-
     if price_min is not None:
         qry = qry.having(func.coalesce(func.min(TicketType.price), 0) >= price_min)
     if price_max is not None:
@@ -219,7 +199,7 @@ def search_events():
         qry = qry.order_by(func.coalesce(func.min(TicketType.price), 0).desc())
     elif sort == 'popularity':
         qry = qry.order_by(func.count(Booking.booking_id).desc(), Event.start_at.asc())
-    else:  # relevance
+    else:
         qry = qry.order_by(Event.start_at.asc().nulls_last())
 
     rows = qry.all()
