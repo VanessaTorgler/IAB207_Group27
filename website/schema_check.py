@@ -54,6 +54,11 @@ def ensure_schema(engine):
         engine, "users", "profile_pic_path",
         "ALTER TABLE users ADD COLUMN profile_pic_path VARCHAR(255)"
     )
+    
+    _ensure_column(
+        engine, "events", "is_draft",
+        "ALTER TABLE events ADD COLUMN is_draft INTEGER NOT NULL DEFAULT 0"
+    )
 
     _ensure_index(
         engine, "ix_events_start_cancel",

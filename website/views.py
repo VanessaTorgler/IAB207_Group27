@@ -11,6 +11,22 @@ from urllib.parse import urlencode
 
 main_bp = Blueprint('main', __name__)
 
+def _has_started(start_at):
+    """
+    Return True if the event's start_at has been reached.
+    """
+    if start_at is None:
+        return False
+
+    if start_at.tzinfo is None:
+        now_local = datetime.now()
+        return start_at <= now_local
+    else:
+        now_utc_naive = datetime()
+        start_utc_naive = start_at.astimezone(timezone.utc).replace(tzinfo=None)
+        return start_utc_naive <= now_utc_naive
+
+
 @main_bp.route('/')
 def _index():
     # redirect base url to /home
@@ -56,6 +72,8 @@ def index():
         .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
         .group_by(Event.id)
     )
+    
+    qry = qry.filter(Event.is_draft == False)
 
     # filters
     if q_text:
@@ -87,23 +105,30 @@ def index():
     now_utc = datetime.now(timezone.utc)
 
     def derive_status(e, sold_count):
+        # Check if Draft first
+        if getattr(e, 'is_draft', False):
+            return 'Draft'
+
+        # Check if Cancelled next
         if getattr(e, 'cancelled', False):
             return 'Cancelled'
-        if not getattr(e, 'is_active', True):
-            return 'Inactive'
-        end_at = e.end_at
-        if end_at is not None:
-            if end_at.tzinfo is None:
-                end_at = end_at.replace(tzinfo=timezone.utc)
-            if end_at <= now_utc:
-                return 'Inactive'
+
+        # Check if Sold Out next
         if e.capacity is not None and (sold_count or 0) >= e.capacity:
             return 'Sold Out'
+
+        # Check if Inactive using has_started()
+        if _has_started(e.start_at):
+            return 'Inactive'
+
+        # All other events that don't meet above criteria = Open
         return 'Open'
 
     enriched = []
     for (e, mp, sold) in rows:
         status = derive_status(e, sold)
+        if status == 'Draft':
+            continue
         enriched.append({
             "event": e,
             "min_price": float(mp or 0.0),
@@ -193,6 +218,8 @@ def search_events():
            .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
            .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
            .group_by(Event.id))
+    
+    qry = qry.filter(Event.is_draft == False)
 
     if q_text:
         ilike = f"%{q_text}%"

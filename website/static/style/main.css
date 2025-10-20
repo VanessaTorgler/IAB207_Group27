@@ -66,11 +66,28 @@ a{ text-decoration-skip-ink:auto; }
 img{ max-width:100%; height:auto; }
 
 /* Status badges */
-.badge-status{ font-weight:600; }
-.badge-open{ background:#d0f1f5; color:#0b5864; }
-.badge-soldout{ background:#f8d7da; color:#842029; }
-.badge-cancelled{ background:#e9ecef; color:#495057; }
-.badge-inactive{ background:#fff3cd; color:#664d03; }
+.badge-status { font-weight: 600; }
+
+.badge-open { background:#d1e7dd; color:#0f5132; border:1px solid #0f5132}
+.badge-inactive { background:#fff3cd; color:#664d03; border:1px solid #664d03 }
+.badge-soldout{
+  background:#f8d7da;
+  color:#842029;
+  border:1px solid #842029;
+  font-weight:600;
+}
+.badge-cancelled{
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #e9ecef 0, #e9ecef 6px,
+      #dde1e6 6px, #dde1e6 12px
+    );
+  color:#495057;
+  border:1px solid #495057;
+  font-weight:600;
+}
+.badge-draft { background:#e7e5ff; color:#3730a3; border:1px solid #3730a3}
 
 /* Accessibility / focus */
 :focus-visible{ outline:3px solid rgba(var(--bs-primary-rgb),.35); outline-offset:2px; }

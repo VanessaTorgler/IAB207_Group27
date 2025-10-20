@@ -105,7 +105,7 @@
               <fieldset>
                 <legend class="form-label mb-1">Status</legend>
                 <div class="check-stack list-scroll">
-                  {% for opt in ['Open', 'Sold Out', 'Cancelled', 'Inactive'] %}
+                  {% for opt in ['Open', 'Sold Out', 'Cancelled', 'Inactive', 'Draft'] %}
                     {% set normalized = opt.lower().replace(' ', '') %}
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="status-{{ normalized }}"
@@ -199,6 +199,7 @@
                           {% elif m.status == 'Cancelled' %}badge-cancelled
                           {% elif m.status == 'Inactive' %}badge-inactive
                           {% elif m.status == 'Sold Out' %}badge-soldout
+                          {% elif m.status == 'Draft' %}badge-draft
                           {% else %}text-bg-light{% endif %}">
                           {{ m.status }}
                         </span>
@@ -227,28 +228,28 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
-                            {% if m.status == 'Inactive' %}
+                            {% if m.status == 'Draft' %}
                               <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             {% else %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Edit Event</a></li>
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Edit Event</a></li>
                             {% endif %}
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
-                            {% if m.status == 'Inactive' %}
+                            {% if m.status == 'Draft' %}
                               <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
                             {% endif %}
                             
-                            {% if m.status != 'Inactive' %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive/Draft</a></li>
+                            {% if m.status != 'Draft' %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalDraft-{{ e.id }}">Make Draft</a></li>
                             {% endif %}
 
                             {% if m.status != 'Cancelled' %}
-                              {% if m.status == 'Inactive' %}
+                              {% if m.status == 'Draft' %}
                                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
                               {% else %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Cancel Event</a></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Cancel Event</a></li>
                               {% endif %}
                             {% endif %}
                           </ul>
@@ -275,10 +276,10 @@
                         {% elif m.status == 'Cancelled' %}badge-cancelled
                         {% elif m.status == 'Inactive' %}badge-inactive
                         {% elif m.status == 'Sold Out' %}badge-soldout
+                        {% elif m.status == 'Draft' %}badge-draft
                         {% else %}text-bg-light{% endif %}">
                         {{ m.status }}
                       </span>
-
                       <div class="d-inline-flex align-items-center gap-2">
                         <span class="badge text-bg-light">{{ e.event_type or 'General' }}</span>
                         <div class="dropdown">
@@ -288,28 +289,28 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
-                            {% if m.status == 'Inactive' %}
+                            {% if m.status == 'Draft' %}
                               <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             {% else %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Edit Event</a></li>
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Edit Event</a></li>
                             {% endif %}
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
-                            {% if m.status == 'Inactive' %}
+                            {% if m.status == 'Draft' %}
                               <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
                             {% endif %}
                             
-                            {% if m.status != 'Inactive' %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalInactive-{{ e.id }}">Make Inactive/Draft</a></li>
+                            {% if m.status != 'Draft' %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalDraft-{{ e.id }}">Make Draft</a></li>
                             {% endif %}
 
                             {% if m.status != 'Cancelled' %}
-                              {% if m.status == 'Inactive' %}
+                              {% if m.status == 'Draft' %}
                                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
                               {% else %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustInactive-{{ e.id }}">Cancel Event</a></li>
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Cancel Event</a></li>
                               {% endif %}
                             {% endif %}
                           </ul>
@@ -323,11 +324,7 @@
                           class="text-reset text-decoration-none">{{ e.title }}</a>
                       </h2>
 
-                      <p class="text-muted small mb-2">
-                        {% if e.start_at %}{{ e.start_at.strftime("%a, %d %b • %I:%M %p") }}{% endif %}
-                        {% if e.location_text %}• {{ e.location_text }}{% endif %}
-                      </p>
-
+                      
                       <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
                         <span>{% if m.min_price > 0 %}${{ '%.2f'|format(m.min_price) }}{% else %}FREE{% endif %}</span>
                         <span>{{ m.sold }}/{{ e.capacity if e.capacity is not none else '—' }}</span>
@@ -340,14 +337,14 @@
           {% endif %}
           <!-- Inactive/Cancel Modals -->
           {% for e in events %}
-            <div class="modal fade" id="modalInactive-{{ e.id }}" tabindex="-1" aria-labelledby="modalInactiveLabel-{{ e.id }}" aria-hidden="true">
+            <div class="modal fade" id="modalDraft-{{ e.id }}" tabindex="-1" aria-labelledby="modalDraftLabel-{{ e.id }}" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                   <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
                     {% if csrf_token %}{{ csrf_token() }}{% endif %}
-                    <input type="hidden" name="action" value="inactive">
+                    <input type="hidden" name="action" value="draft">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="modalInactiveLabel-{{ e.id }}">Mark event as inactive?</h5>
+                      <h5 class="modal-title" id="modalDraftLabel-{{ e.id }}">Convert Event to Draft?</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -356,7 +353,7 @@
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep as is</button>
-                      <button type="submit" class="btn btn-primary">Make Inactive</button>
+                      <button type="submit" class="btn btn-primary">Convert to Draft</button>
                     </div>
                   </form>
                 </div>
@@ -388,25 +385,25 @@
           {% endfor %}
           {# safeguard modal: must inactivate first #}
           {% for e in events %}
-            <div class="modal fade" id="modalMustInactive-{{ e.id }}" tabindex="-1" aria-labelledby="modalMustInactiveLabel-{{ e.id }}" aria-hidden="true">
+            <div class="modal fade" id="modalMustDraft-{{ e.id }}" tabindex="-1" aria-labelledby="modalMustDraftLabel-{{ e.id }}" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="modalMustInactiveLabel-{{ e.id }}">Make event inactive first</h5>
+                    <h5 class="modal-title" id="modalMustInactiveLabel-{{ e.id }}">Convert to Draft first</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
                     <p class="mb-2"><strong>{{ e.title }}</strong></p>
                     <p class="mb-0 small text-muted">
-                      This action is only available when the event is inactive. Mark it inactive first, then try again.
+                      This action is only available when the event is a draft. Convert it to a draft first, then try again.
                     </p>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                     <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}" class="m-0">
                       {% if csrf_token %}{{ csrf_token() }}{% endif %}
-                      <input type="hidden" name="action" value="inactive">
-                      <button type="submit" class="btn btn-primary">Make Inactive</button>
+                      <input type="hidden" name="action" value="draft">
+                      <button type="submit" class="btn btn-primary">Convert to Draft</button>
                     </form>
                   </div>
                 </div>
