@@ -340,7 +340,7 @@ def my_events():
         db.session.query(
             Event,
             func.min(cast(TicketType.price, Float)).label("min_price"),
-            func.count(Booking.booking_id).label("sold_count"),
+            func.coalesce(func.sum(Booking.qty), 0).label("sold_count"),
         )
         .outerjoin(TicketType, TicketType.event_id == Event.id)
         .outerjoin(Booking, Booking.event_id == Event.id)
@@ -377,6 +377,7 @@ def my_events():
     # metrics/status for all rows
     metrics = {}
     for e, mp, sold in rows:
+        sold = int(sold or 0)
         if getattr(e, "is_draft", False):
             status = "Draft"
         elif e.cancelled:
@@ -394,7 +395,7 @@ def my_events():
                 
         metrics[e.id] = {
             "min_price": float(mp or 0.0),
-            "sold": int(sold or 0),
+            "sold": sold,
             "status": status,
         }
 
