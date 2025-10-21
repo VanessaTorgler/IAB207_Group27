@@ -106,68 +106,38 @@
         </div>
       </div>
 
-      <!-- Comments list -->
+      <!-- Comments list + form -->
       <div class="card mt-4" aria-labelledby="commentsHeading">
         <div class="card-header d-flex align-items-center justify-content-between">
           <span id="commentsHeading" class="fw-semibold">Comments</span>
           <span class="text-muted small"><strong>3</strong> comments • Visible to everyone</span>
         </div>
         <div class ="card-body">
+
           {{ render_form(form, '/event/{0}'.format(event_id)) }}
-      
+
           {% for comment in event.comments %}
           <div class="col-md-12">  
-            <b>{{ comment.user.name }} <span class="ml-2 text-muted">date</span></b>
+            <b>{{ comment.user.name }} <span class="ml-2 text-muted">Posted at: {{comment.posted_at}}</span></b>
             <p>{{ comment.body }}</p>  
         </div> 
-      {% endfor %} 
+          {% endfor %} 
         </div>
-        <!-- <div class="card-body">
-          <article class="d-flex gap-3 mb-3">
-            <img class="rounded-circle comment-avatar" src="../static/img/aisha.jpg" alt="Aisha avatar" width="40"
-              height="40">
-            <div>
-              <div class="fw-semibold">Aisha</div>
-              <div class="text-muted small">Posted 02 Sep 2025</div>
-              <p class="mb-0">Already got my tickets, can't wait 😊 Will there be parking on-site?</p>
-            </div>
-          </article>
-          <article class="d-flex gap-3 mb-3">
-            <img class="rounded-circle comment-avatar" src="../static/img/dev.jpg" alt="Dev avatar" width="40"
-              height="40">
-            <div>
-              <div class="fw-semibold">Dev</div>
-              <div class="text-muted small">Posted 02 Sep 2025</div>
-              <p class="mb-0">Any dietary options for the light dinner?</p>
-            </div>
-          </article>
-          <article class="d-flex gap-3">
-            <img class="rounded-circle comment-avatar" src="../static/img/mia.jpg" alt="Mia avatar" width="40"
-              height="40">
-            <div>
-              <div class="fw-semibold">Mia (Host)</div>
-              <div class="text-muted small">Posted 03 Sep 2025</div>
-              <p class="mb-0">Yes—parking under the convention centre; veg &amp; GF options included.</p>
-            </div> -->
           </article>
         </div>
       </div>
+      
 
       <!-- Comment form -->
-      <form class="card mt-3" aria-label="Post a comment">
+      <!-- <form class="card mt-3" aria-label="Post a comment">
         <div class="card-header fw-semibold">Post a comment</div>
         <div class="card-body">
-          <div class="mb-3">
-            <label for="commentText" class="form-label">Your comment</label>
-            <textarea id="commentText" class="form-control" rows="3" placeholder="Ask a question or share thoughts…"
-              required></textarea>
-          </div>
+          
           <div class="d-flex justify-content-end gap-2">
-            <button type="reset" class="btn btn-outline-secondary">Clear</button>
-            <button type="button" class="btn btn-primary">Submit</button>
           </div>
         </div>
-      </form>
+      </form> -->
+    
     </section>
 
     <!-- Right column -->

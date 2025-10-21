@@ -14,7 +14,7 @@ class LoginForm(FlaskForm):
 
 # comment form
 class CommentForm(FlaskForm):
-    comment=TextAreaField("Comment", validators=[InputRequired(), Length(min=1, max=500)])
+    comment=TextAreaField("Your Comment:", validators=[InputRequired(), Length(min=1, max=500)])
     submit = SubmitField("Post Comment")
     
  # this is the registration form
