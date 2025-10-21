@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms.fields import TextAreaField, SubmitField, StringField, PasswordField, DateField, TimeField, FileField, DecimalField, SelectField, DateTimeField, BooleanField
 from datetime import datetime
-from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, InputRequired, ValidationError
+from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, InputRequired, ValidationError, AnyOf
 from werkzeug.utils import secure_filename
 from flask_wtf.file import FileAllowed
+from wtforms import HiddenField
 import os, time, uuid
 
 # creates the login information
@@ -30,6 +31,10 @@ class RegisterForm(FlaskForm):
 
     # submit button
     submit = SubmitField("Register")
+    
+# logout form    
+class LogoutForm(FlaskForm):
+    pass
 
 class CreateEventForm(FlaskForm):
     title=StringField("Title", validators=[InputRequired(), Length(min=3, max=160, message="Title must be between 3 and 160 characters long.")])
@@ -161,3 +166,6 @@ class ProfileForm(FlaskForm):
                             validators=[Optional(), FileAllowed(['jpg','jpeg','png','gif'], 'Images only')])
     remove_profile_pic = BooleanField('Remove current picture')
     submit = SubmitField('Save changes')
+    
+class EventActionForm(FlaskForm):
+    action = HiddenField(validators=[DataRequired(), AnyOf(['draft', 'cancel', 'inactive', 'publish'])])

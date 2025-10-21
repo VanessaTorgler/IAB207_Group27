@@ -88,7 +88,7 @@
             </li>
             <li>
               <form method="post" action="{{ url_for('auth.logout') }}">
-                {% if csrf_token is defined %}{{ csrf_token() }}{% endif %}
+                {{ logout_form.hidden_tag() }}
                 <button type="submit" class="dropdown-item text-danger">
                   <i class="bi bi-box-arrow-right me-2"></i> Logout
                 </button>

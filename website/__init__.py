@@ -93,6 +93,15 @@ def create_app():
 
     from . import events
     app.register_blueprint(events.events_bp)
+    
+    from .forms import LogoutForm
+    from .forms import EventActionForm
+    @app.context_processor
+    def inject_logout_form():
+        return {
+            "logout_form": LogoutForm(),
+            "event_action_form": EventActionForm(),
+        }
 
     # (If you keep custom 404s elsewhere, you can still register them here)
     try:
