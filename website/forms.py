@@ -30,6 +30,10 @@ class RegisterForm(FlaskForm):
 
     # submit button
     submit = SubmitField("Register")
+    
+# logout form    
+class LogoutForm(FlaskForm):
+    pass
 
 class CreateEventForm(FlaskForm):
     title=StringField("Title", validators=[InputRequired(), Length(min=3, max=160, message="Title must be between 3 and 160 characters long.")])
