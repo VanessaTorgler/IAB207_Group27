@@ -108,8 +108,6 @@ def update(event_id):
         form.category.data = tagfind
         form.ticket_price.data = ticket_type.price if ticket_type else 0
         form.format.data = event.event_type
-        
-        form.timezone.data = (event.event_timezone or "")
 
         # start_at -> date + time
         if event.start_at:
@@ -176,7 +174,6 @@ def update(event_id):
         event.title = form.title.data
         event.description =  form.description.data
         event.event_type = form.format.data
-        event.event_timezone = (form.timezone.data or event.event_timezone or "")
         event.start_at = start_dt
         event.rsvp_closes = rsvp_dt
         event.end_at = end_dt
@@ -221,9 +218,8 @@ def createUpdate():
         db_file_path = check_upload_file(form)
         print("Form Submitted!")
         print(
-            form.title.data, form.description.data, form.category.data, form.format.data,
-            form.date.data, form.start_time.data, form.end_time.data, form.timezone.data,
-            form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data,
+            form.title.data, form.description.data, form.category.data, form.format.data, form.date.data, form.start_time.data, 
+            form.end_time.data, form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data,
             form.ticket_price.data, form.rsvp_closes.data, form.host_name.data, form.host_contact.data
         )
         
@@ -239,7 +235,6 @@ def createUpdate():
             title=form.title.data,
             description=form.description.data,
             event_type=form.format.data,
-            event_timezone=(form.timezone.data or ""),
             start_at=start_dt,
             rsvp_closes=rsvp_dt,
             end_at=end_dt,
