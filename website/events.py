@@ -338,6 +338,10 @@ def my_events():
         .filter(Event.host_user_id == current_user.id)
         .group_by(Event.id)
     )
+    
+    filters_cleared = not (q_text or status_selected or category_selected or (price_min is not None) or (price_max is not None))
+    if ("when" not in request.args) and filters_cleared:
+        when_ = "all"
 
     now_utc = datetime.now(timezone.utc)
 
@@ -471,12 +475,6 @@ def event_action(event_id):
         e.is_active = False
         e.is_draft  = False
         flash("Event has been cancelled.", "warning")
-
-    elif action == "inactive":
-        e.is_active = False
-        e.is_draft  = False
-        e.cancelled = False
-        flash("Event marked as inactive.", "info")
 
     elif action == "draft":
         e.is_draft  = True
