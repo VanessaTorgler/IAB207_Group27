@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, session, request, redirect, url_for, flash
+from flask import Blueprint, render_template, session, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
 from datetime import datetime, timezone
 from .forms import CreateEventForm, CommentForm, check_upload_file
 from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking, User
 from .bookings import checkStatus
+from .forms import EventActionForm
 #from .views import check_upload_file
 from . import db
 from werkzeug.utils import secure_filename
@@ -455,6 +456,10 @@ def my_events():
 @events_bp.post("/event/<int:event_id>/action")
 @login_required
 def event_action(event_id):
+    form = EventActionForm()
+    if not form.validate_on_submit():  # CSRF + valid action
+        abort(400)
+        
     action = (request.form.get("action") or "").strip()
     e = db.session.get(Event, event_id)
     if not e or e.host_user_id != current_user.id:
