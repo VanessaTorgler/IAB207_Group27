@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, url_for, redirect, flash
+from flask import Blueprint, render_template, url_for, redirect, flash, request
 from flask_login import login_required, current_user
 from datetime import datetime, timezone
 from sqlalchemy import func
 from . import db
-from .models import Booking, Event
+from .models import Booking, Event, TicketType
+import secrets
+from decimal import Decimal
 
 bookings_bp = Blueprint("bookings", __name__)
 
@@ -16,8 +18,8 @@ def _status_for(event):
         return "Inactive"
     capacity = getattr(event, "capacity", None)
     if capacity is not None:
-        sold = db.session.query(Booking).filter_by(event_id=event.id).count()
-        if sold >= capacity:
+        sold = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event.id).scalar() or 0
+        if sold >= (capacity or 0):
             return "Sold Out"
     return "Open"
 
@@ -36,21 +38,34 @@ def booking_history():
     bookings = []
     for r in rows:
         e = r.event
-        img = getattr(e, "image", None) or "founders-breakfast.jpg"
+        cover = None
+        if e and getattr(e, "images", None):
+            try:
+                cover = e.images[0].url
+            except Exception:
+                cover = None
+        if not cover:
+            cover = url_for("static", filename="img/founders-breakfast.jpg")
         start_at = getattr(e, "start_at", None)
         end_at = getattr(e, "end_at", None)
+        when_line = ""
+        if start_at and end_at:
+            when_line = f"{fmt(start_at, '%a, %d %b %Y')} • {fmt(start_at, '%I:%M %p')}–{fmt(end_at, '%I:%M %p')}"
+        elif start_at:
+            when_line = fmt(start_at, '%a, %d %b %Y')
+        
         bookings.append({
             "event_id": getattr(e, "id", None),
             "event_title": getattr(e, "title", "Event"),
-            "image_url": url_for("static", filename=f"img/{img}"),
-            "thumb_url": url_for("static", filename=f"img/{img}"),
+            "image_url": cover,
+            "image_url": cover,
             "image_alt": f"Cover image for {getattr(e, 'title', 'Event')}",
-            "when_line": f"{fmt(start_at, '%a, %d %b %Y')} • {fmt(start_at, '%-I:%M')}–{fmt(end_at, '%-I:%M %p')}" if start_at and end_at else fmt(start_at, '%a, %d %b %Y'),
+            "when_line": when_line,
             "date_short": fmt(start_at, '%d %b %Y'),
-            "location_short": getattr(e, "location_text", None) or getattr(e, "location", "") or "",
-            "booking_id": getattr(r, "public_id", None) or str(getattr(r, "id", "")),
-            "booked_on_line": fmt(getattr(r, "created_at", None), '%a, %d %b %Y • %-I:%M %p'),
-            "booked_on_short": fmt(getattr(r, "created_at", None), '%d %b %Y • %-I:%M %p'),
+            "location_short": getattr(e, "location_text", "") or "",
+            "booking_id": getattr(r, "booking_id", ""),
+            "booked_on_line": fmt(getattr(r, "created_at", None), '%a, %d %b %Y • %I:%M %p'),
+            "booked_on_short": fmt(getattr(r, "created_at", None), '%d %b %Y • %I:%M %p'),
             "tickets": getattr(r, "quantity", 1),
             "status": _status_for(e),
             "cancellable": _status_for(e) == "Open",
@@ -122,4 +137,91 @@ def cancel_booking(booking_id):
             return redirect(url_for("bookings.booking_history"))
 
     flash("Your booking was cancelled.", "success")
+    return redirect(url_for("bookings.booking_history"))
+
+@bookings_bp.post("/event/<int:event_id>/book")
+@login_required
+def book_event(event_id):
+    event = db.session.get(Event, event_id)
+    if not event:
+        flash("Event not found.", "danger")
+        return redirect(url_for("main.index"))
+
+    # cannot book if you're the host
+    if current_user.id == event.host_user_id:
+        flash("Hosts can’t book their own events.", "warning")
+        return redirect(url_for("events.event", event_id=event_id))
+
+    # must be Open
+    if checkStatus(event_id) != "Open":
+        flash("This event is not open for booking.", "warning")
+        return redirect(url_for("events.event", event_id=event_id))
+
+    # qty from form
+    try:
+        qty = int((request.form.get("qty") or "1").strip())
+    except Exception:
+        qty = 1
+    if qty < 1:
+        qty = 1
+    if qty > 12:
+        qty = 12
+
+    # capacity check
+    sold = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event_id).scalar() or 0
+    remaining = (event.capacity or 0) - int(sold)
+    if event.capacity is not None and qty > remaining:
+        flash(f"Only {remaining} tickets remaining.", "warning")
+        return redirect(url_for("events.event", event_id=event_id))
+
+    tt = (
+        db.session.query(TicketType)
+        .filter(TicketType.event_id == event_id)
+        .order_by(TicketType.price.asc())
+        .first()
+    )
+    if not tt:
+        flash("No tickets available for this event.", "danger")
+        return redirect(url_for("events.event", event_id=event_id))
+
+    unit_price = Decimal(str(tt.price or 0))
+    total_amount = unit_price * qty
+
+    # create booking
+    booking_id = secrets.token_hex(12) 
+    b = Booking(
+        booking_id=booking_id,
+        event_id=event_id,
+        user_id=current_user.id,
+        ticket_type_id=tt.id,
+        qty=qty,
+        unit_price=unit_price,
+        total_amount=total_amount,
+        status="CONFIRMED",
+    )
+    db.session.add(b)
+    db.session.flush()
+
+    from .models import Payment
+    p = Payment(
+        booking_id=b.booking_id,
+        provider="SIMULATED",
+        method_brand="VISA",
+        method_last4="4242",
+        amount=total_amount,
+        currency=tt.currency or "AUD",
+        status="CAPTURED",
+        authorised_at=func.now(),
+        captured_at=func.now(),
+    )
+    db.session.add(p)
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash("Could not complete your booking.", "danger")
+        return redirect(url_for("events.event", event_id=event_id))
+
+    flash("Your purchase is complete. See it in Booking History.", "success")
     return redirect(url_for("bookings.booking_history"))

@@ -65,7 +65,7 @@
                       <dd class="col-7"><span class="badge rounded-pill {{ badge_class(b.status) }}">{{ b.status }}</span></dd>
                     </dl>
                     <div class="mt-auto d-flex gap-2">
-                      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.event_detail', event_id=b.event_id) }}">View event</a>
+                      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.event', event_id=b.event_id) }}">View event</a>
                       {% if b.cancellable %}
                       <form method="post" action="{{ url_for('bookings.cancel_booking', booking_id=b.booking_id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -116,7 +116,7 @@
                   <td>{{ b.tickets }}</td>
                   <td><span class="badge rounded-pill {{ badge_class(b.status) }}">{{ b.status }}</span></td>
                   <td class="text-end">
-                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.event_detail', event_id=b.event_id) }}">View</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('events.event', event_id=b.event_id) }}">View</a>
                   </td>
                 </tr>
                 {% endfor %}

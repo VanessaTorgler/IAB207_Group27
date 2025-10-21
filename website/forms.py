@@ -126,3 +126,6 @@ class ProfileForm(FlaskForm):
     
 class EventActionForm(FlaskForm):
     action = HiddenField(validators=[DataRequired(), AnyOf(['draft', 'cancel', 'publish'])])
+    
+class BookingForm(FlaskForm):
+    qty = StringField('Quantity', validators=[InputRequired(), Length(min=1, max=3)])
