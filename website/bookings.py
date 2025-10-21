@@ -13,13 +13,17 @@ def _status_for(event):
     if getattr(event, "cancelled", False):
         return "Cancelled"
     now = datetime.now()
-    end_at = getattr(event, "end_at", None)
-    if end_at and end_at < now:
+    if getattr(event, "end_at", None) and event.end_at < now:
         return "Inactive"
-    capacity = getattr(event, "capacity", None)
-    if capacity is not None:
-        sold = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event.id).scalar() or 0
-        if sold >= (capacity or 0):
+    cap = getattr(event, "capacity", None)
+    if cap is not None:
+        sold = (
+            db.session.query(func.coalesce(func.sum(Booking.qty), 0))
+            .filter(Booking.event_id == event.id, Booking.status == "CONFIRMED")
+            .scalar()
+            or 0
+        )
+        if sold >= int(cap or 0):
             return "Sold Out"
     return "Open"
 
@@ -66,7 +70,7 @@ def booking_history():
             "booking_id": getattr(r, "booking_id", ""),
             "booked_on_line": fmt(getattr(r, "created_at", None), '%a, %d %b %Y • %I:%M %p'),
             "booked_on_short": fmt(getattr(r, "created_at", None), '%d %b %Y • %I:%M %p'),
-            "tickets": getattr(r, "quantity", 1),
+            "tickets": getattr(r, "qty", 1),
             "status": _status_for(e),
             "cancellable": _status_for(e) == "Open",
         })
@@ -84,8 +88,11 @@ def checkStatus(event_id):
         return "Inactive"
 
     # Check if Sold Out first
-    sold = db.session.query(func.count(Booking.booking_id)).filter_by(event_id=event_id).scalar() or 0
-    if e.capacity is not None and sold >= e.capacity:
+    sold = (db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter(Booking.event_id == event_id, Booking.status == "CONFIRMED").scalar() or 0)
+    
+    if e.capacity is not None and int(e.capacity or 0) <= 0:
+        return "Sold Out"
+    if e.capacity is not None and sold >= int(e.capacity):
         return "Sold Out"
 
     # Inactive at/after start
