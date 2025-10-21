@@ -46,18 +46,23 @@
           <dt class="col-4 col-sm-3">Category</dt>
           <dd class="col-8 col-sm-9">{{ category }}</dd>
           <dt class="col-4 col-sm-3">Capacity</dt>
-          <dd class="col-8 col-sm-9">500 seats • 78 remaining</dd>
+          <dd class="col-8 col-sm-9">
+            {% if capacity is not none %}
+              {{ capacity }} total{% if remaining is not none %} • {{ remaining }} remaining{% endif %}
+            {% else %}
+              —
+            {% endif %}
+          </dd>
           <dt class="col-4 col-sm-3">Price</dt>
           <dd class="col-8 col-sm-9">{{ price }}</dd>
         </dl>
 
         <!-- Booking Path B: Modal confirmation -->
-        <div class="mt-2">
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmBookingModal"
-            aria-label="Open booking confirmation modal">
-            Book Now
-          </button>
-        </div>
+        {% set can_book = (status == 'Open') and (not is_host) %}
+        {% if can_book %}
+          <!-- CSS-only modal trigger -->
+          <a href="#bookModal" class="btn btn-primary mt-2">Book Now</a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -66,28 +71,41 @@
 
 {% block content %}
 <!-- Booking Confirmation Modal -->
-<div class="modal fade" id="confirmBookingModal" tabindex="-1" aria-labelledby="confirmBookingLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="confirmBookingLabel">Confirm your booking</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
-      </div>
-      <div class="modal-body small">
+<div id="bookModal" class="modal-css" aria-labelledby="bookModalTitle" role="dialog" aria-modal="true">
+  <div class="modal-css__dialog card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 id="bookModalTitle" class="h5 mb-0">Complete purchase</h2>
+      <!-- Close -->
+      <a href="#" class="btn-close" aria-label="Close"></a>
+    </div>
+
+    <form method="post" action="{{ url_for('bookings.book_event', event_id=event_id) }}">
+      <div class="card-body small">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p class="mb-2">Event: <strong>{{ title }}</strong></p>
         <p class="mb-2">Date/Time: {{ start_at_date }} at {{ start_at_time }}</p>
-        <div class="mb-3">
-          <label for="modalTicketQty" class="form-label">Tickets</label>
-          <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label for="modalTicketQty" class="form-label">Tickets</label>
+            <input id="modalTicketQty" name="qty" type="number" min="1" max="12" value="1" class="form-control">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Remaining</label>
+            <input type="text" class="form-control" value="{{ remaining if remaining is not none else '—' }}" disabled>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <a href="{{ url_for('bookings.booking_history') }}" class="btn btn-primary">Confirm &amp; Go To Payment</a>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+
+      <div class="card-footer d-grid gap-2 d-sm-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Complete purchase</button>
+        <a href="#" class="btn btn-outline-secondary">Cancel</a>
       </div>
-    </div>
+    </form>
   </div>
 </div>
+
 
 <!-- Details & Comments -->
 <main id="main" class="container py-4">

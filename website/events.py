@@ -71,10 +71,24 @@ def event(event_id):
         db.select(Event_Image.url).where(Event_Image.event_id==event_id)
     ).scalar_one_or_none()
     status = checkStatus(event_id)
+    
+    is_host = False
+    if hasattr(current_user, "is_authenticated") and current_user.is_authenticated:
+        is_host = (current_user.id == hostID)
+        
+    # sold quantity (sum of bookings)
+    sold_qty = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event_id).scalar() or 0
+    remaining = None
+    if capacity is not None:
+        try:
+            remaining = max(int(capacity) - int(sold_qty), 0)
+        except Exception:
+            remaining = None
+    
     return render_template('event.html', event_id=event_id, host_email=hostEmail,
     title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity,
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
-    image_alt_text=imageAltText)
+    image_alt_text=imageAltText, is_host=is_host, remaining=remaining, sold_qty=sold_qty,)
 
 @events_bp.route('/update/<int:event_id>', methods=['GET', 'POST'])
 @login_required
