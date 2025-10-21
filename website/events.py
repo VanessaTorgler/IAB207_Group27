@@ -12,6 +12,24 @@ import os, time, uuid
 
 events_bp = Blueprint('events', __name__)
 
+def _has_started(start_at):
+    """
+    Return True if the event's start_at has been reached.
+    """
+    if start_at is None:
+        return False
+
+    if start_at.tzinfo is None:
+        # Compare naive to naive: treat DB value as local time on the server
+        now_local = datetime.now()
+        return start_at <= now_local
+    else:
+        # Compare in UTC, then drop tzinfo so both sides are naive
+        now_utc_naive = datetime.utcnow()
+        start_utc_naive = start_at.astimezone(timezone.utc).replace(tzinfo=None)
+        return start_utc_naive <= now_utc_naive
+
+
 @events_bp.route('/event/<int:event_id>', methods=['GET', 'POST'])
 def event(event_id):
     #if event_id is invalid, redirect to home
@@ -36,10 +54,18 @@ def event(event_id):
     price = db.session.execute(
         db.select(func.min(TicketType.price)).where(TicketType.event_id==event_id)
     ).scalar()
-    startAtDate = startAt.strftime("%a, %d %b %Y") 
-    startAtTime = startAt.strftime("%I:%M %p").lstrip("0")
-    endAt = db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one()
-    endAt = endAt.strftime("%I:%M %p").lstrip("0")
+    
+    startAt = db.session.execute(db.select(Event.start_at).where(Event.id == event_id)).scalar_one()
+    startAtDate = startAt.strftime("%a, %d %b %Y") if startAt else ""
+    startAtTime = startAt.strftime("%I:%M %p").lstrip("0") if startAt else ""
+
+    endAt_dt = db.session.execute(
+        db.select(Event.end_at).where(Event.id == event_id)
+    ).scalar_one()
+
+    endAt = endAt_dt.strftime("%I:%M %p").lstrip("0") if endAt_dt else ""
+
+
     image = db.session.execute(
         db.select(Event_Image.url).where(Event_Image.event_id==event_id)
     ).scalar_one_or_none()
@@ -65,30 +91,42 @@ def update(event_id):
     #get event details
     event = db.session.get(Event, event_id)
     #get event image details
-    event_image= db.session.get(Event_Image, event_id)
+    event_image = db.session.query(Event_Image).filter_by(event_id=event_id).first()
     #get event tag details
-    event_tag = db.session.get(Event_Tag, event_id)
+    event_tag   = db.session.query(Event_Tag).filter_by(event_id=event_id).first()
     #get ticket type details
-    ticket_type = db.session.get(TicketType, event_id)
+    ticket_type = db.session.query(TicketType).filter_by(event_id=event_id).first()
 
     form = CreateEventForm(obj=event)
     form.event_image.validators = []
     #create form with existing event details manually, as obj=event does not populate fully
-    form.description.data = event.description
-    form.image_alt_text.data = event_image.alt_text
-    tagfind = db.session.execute(
-        db.select(Tag.name).where(Tag.id == event_tag.tag_id)).scalar_one()
-    form.category.data = tagfind
-    form.ticket_price.data = ticket_type.price
-    form.format.data = event.event_type
-    form.timezone.data = event.event_timezone
-    form.date.data = event.start_at.date()
-    form.start_time.data = event.start_at.time()
-    form.end_time.data = event.end_at.time()
-    form.host_name.data = db.session.execute(db.select(User.name).where(User.id==event.host_user_id)).scalar_one()
-    form.host_contact.data = db.session.execute(db.select(User.email).where(User.id==event.host_user_id)).scalar_one()
-    form.location.data = event.location_text
-    #image not populated for security reasons
+    if request.method == "GET":
+        form.description.data = event.description
+        form.image_alt_text.data = (event_image.alt_text if event_image else "")
+        tagfind = db.session.execute(db.select(Tag.name).where(Tag.id == event_tag.tag_id)).scalar_one() if event_tag else ""
+        form.category.data = tagfind
+        form.ticket_price.data = ticket_type.price if ticket_type else 0
+        form.format.data = event.event_type
+        
+        form.timezone.data = (event.event_timezone or "")
+
+        # start_at -> date + time
+        if event.start_at:
+            form.date.data = event.start_at.replace(tzinfo=None).date()
+            form.start_time.data = event.start_at.replace(tzinfo=None).time()
+
+        # end_at -> time
+        if event.end_at:
+            form.end_time.data = event.end_at.replace(tzinfo=None).time()
+
+        # rsvp_closes -> datetime-local
+        if event.rsvp_closes:
+            form.rsvp_closes.data = event.rsvp_closes.replace(tzinfo=None)
+
+        form.host_name.data = db.session.execute(db.select(User.name).where(User.id == event.host_user_id)).scalar_one()
+        form.host_contact.data = db.session.execute(db.select(User.email).where(User.id == event.host_user_id)).scalar_one()
+        form.location.data = event.location_text or ""
+        #image not populated for security reasons
 
 
     if form.validate_on_submit():
@@ -104,16 +142,42 @@ def update(event_id):
             event_image.url = db_file_path
         else:
             form.event_image.data = db.session.execute(db.select(Event_Image.url).where(Event_Image.event_id==event.id)).scalar_one()
+        action = (request.form.get("action") or "").strip().lower()
+        if action == "draft":
+            event.is_draft = True
+            event.is_active = False
+            event.cancelled = False
+            msg = "Event saved as Draft."
+            cat = "info"
+        elif action == "publish":
+            event.is_draft = False
+            event.is_active = True
+            event.cancelled = False
+            msg = "Event published."
+            cat = "success"
+        elif action == "schedule":
+            event.is_draft = True
+            event.is_active = False
+            event.cancelled = False
+            msg = "Event scheduled (saved as Draft for now)."
+            cat = "info"
+        else:
+            msg = "Event updated."
+            cat = "success"
 
         start_dt = datetime.combine(form.date.data, form.start_time.data)
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
+
+        rc = form.rsvp_closes.data
+        rsvp_dt = rc.replace(tzinfo=None) if rc else None
+
         #update event details
         event.title = form.title.data
         event.description =  form.description.data
         event.event_type = form.format.data
-        event.event_timezone = form.timezone.data
+        event.event_timezone = (form.timezone.data or event.event_timezone or "")
         event.start_at = start_dt
-        event.rsvp_closes = form.rsvp_closes.data
+        event.rsvp_closes = rsvp_dt
         event.end_at = end_dt
         event.location_text = form.location.data
         event.capacity = form.capacity.data
@@ -134,10 +198,8 @@ def update(event_id):
         db.session.add(event_tag)
         db.session.add(ticket_type)
         db.session.commit()
-        flash(f"Successfully created event. You can <a href='{url_for('events.createUpdate')}' class='alert-link'>host another event</a> "
-        f"or <a href='{url_for('events.event', event_id=event.id)}' class='alert-link'>visit it</a>.",
-        "success")
-        return redirect(url_for('main.index'))
+        flash(msg, cat)
+        return redirect(url_for('events.my_events'))
     
     print(form.errors)
     return render_template('create-update.html', active_page='create-update', form=form, is_create=False)
@@ -153,6 +215,7 @@ def createUpdate():
             field.data = ""
    
     if form.validate_on_submit():
+        action = (request.form.get("action") or "publish").strip().lower()
         #get and save image
         db_file_path = check_upload_file(form)
         print("Form Submitted!")
@@ -162,9 +225,12 @@ def createUpdate():
             form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data,
             form.ticket_price.data, form.rsvp_closes.data, form.host_name.data, form.host_contact.data
         )
-
+        
         start_dt = datetime.combine(form.date.data, form.start_time.data)
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
+
+        rc = form.rsvp_closes.data
+        rsvp_dt = rc.replace(tzinfo=None) if rc else None
 
         #create event entry
         event = Event(
@@ -172,13 +238,23 @@ def createUpdate():
             title=form.title.data,
             description=form.description.data,
             event_type=form.format.data,
-            event_timezone=form.timezone.data,
+            event_timezone=(form.timezone.data or ""),
             start_at=start_dt,
-            rsvp_closes=form.rsvp_closes.data,
+            rsvp_closes=rsvp_dt,
             end_at=end_dt,
             location_text=form.location.data,
             capacity=form.capacity.data
         )
+
+        if action == "draft":
+            event.is_draft = True
+            event.is_active = False
+            event.cancelled = False
+        elif action == "publish":
+            event.is_draft = False
+            event.is_active = True
+            event.cancelled = False
+        
         db.session.add(event)
         db.session.flush()
 
@@ -214,6 +290,13 @@ def createUpdate():
         db.session.add(event_tag)
         db.session.add(ticket_type)
         db.session.commit()
+        
+        if action == "draft":
+            flash("Event saved as Draft.", "info")
+        elif action == "publish":
+            flash("Event published.", "success")
+        else:
+            flash("Event scheduled (saved as Draft for now).", "info")
 
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
@@ -280,21 +363,21 @@ def my_events():
     # metrics/status for all rows
     metrics = {}
     for e, mp, sold in rows:
-        status = "Open"
-        if e.cancelled:
+        if getattr(e, "is_draft", False):
+            status = "Draft"
+        elif e.cancelled:
             status = "Cancelled"
-        elif not getattr(e, "is_active", True):
-            status = "Inactive"
         else:
-            end_at = e.end_at
-            if end_at is not None:
-                if end_at.tzinfo is None:
-                    end_at = end_at.replace(tzinfo=timezone.utc)
-                if end_at <= now_utc:
-                    status = "Inactive"
-            if status == "Open" and e.capacity is not None and (sold or 0) >= e.capacity:
+            status = "Open"
+
+            # Sold Out
+            if e.capacity is not None and (sold or 0) >= e.capacity:
                 status = "Sold Out"
 
+            # Inactive only when start time has been reached
+            if status == "Open" and _has_started(e.start_at):
+                status = "Inactive"
+                
         metrics[e.id] = {
             "min_price": float(mp or 0.0),
             "sold": int(sold or 0),
@@ -378,18 +461,33 @@ def event_action(event_id):
         flash("Event not found.", "danger")
         return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
 
-    now_utc = datetime.now(timezone.utc)
-
     if action == "cancel":
         e.cancelled = True
+        e.is_active = False
+        e.is_draft  = False
         flash("Event has been cancelled.", "warning")
+
     elif action == "inactive":
         e.is_active = False
+        e.is_draft  = False
+        e.cancelled = False
         flash("Event marked as inactive.", "info")
+
+    elif action == "draft":
+        e.is_draft  = True
+        e.is_active = False
+        e.cancelled = False
+        flash("Event saved as draft.", "info")
+
+    elif action == "publish":
+        e.is_active = True
+        e.is_draft  = False
+        e.cancelled = False
+        flash("Event published.", "success")
+
     else:
         flash("Unknown action.", "danger")
         return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
 
     db.session.commit()
-    # preserve current view if present
     return redirect(url_for("events.my_events", view=request.args.get("view", "table")))

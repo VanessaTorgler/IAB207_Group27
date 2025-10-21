@@ -58,26 +58,28 @@ def booking_history():
     return render_template("history.html", active_page="bookinghistory", bookings=bookings)
 
 def checkStatus(event_id):
-    #if it's cancelled, return "Cancelled
-    if db.session.execute(db.select(Event.cancelled).where(Event.id==event_id)).scalar_one():
+    e = db.session.get(Event, event_id)
+    now_utc = datetime.now(timezone.utc)
+
+    if e.is_draft:
+        return "Draft"
+    if e.cancelled:
         return "Cancelled"
+    if not e.is_active:
+        return "Inactive"
 
-    end_at = db.session.execute(db.select(Event.end_at).where(Event.id==event_id)).scalar_one()
-    if end_at:
-        now = datetime.now(timezone.utc)
-        #if it's past, return "Inactive"
-        if end_at.tzinfo is None:
-            end_at = end_at.replace(tzinfo=timezone.utc)
-        if end_at <= now:
-            return "Inactive"
-
-    #if num of tickets sold = capacity, return "Sold Out"
-    sold = db.session.execute(
-        db.select(func.count(Booking.booking_id)).where(Booking.event_id==event_id)
-    ).scalar_one()
-    cap = db.session.execute(db.select(Event.capacity).where(Event.id==event_id)).scalar_one()
-    if cap is not None and cap <= sold:
+    # Check if Sold Out first
+    sold = db.session.query(func.count(Booking.booking_id)).filter_by(event_id=event_id).scalar() or 0
+    if e.capacity is not None and sold >= e.capacity:
         return "Sold Out"
+
+    # Inactive at/after start
+    start_at = e.start_at
+    if start_at is not None:
+        if start_at.tzinfo is None:
+            start_at = start_at.replace(tzinfo=timezone.utc)
+        if start_at <= now_utc:
+            return "Inactive"
 
     return "Open"
 
