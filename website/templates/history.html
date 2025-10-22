@@ -67,16 +67,60 @@
                     <div class="mt-auto d-flex gap-2">
                       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('events.event', event_id=b.event_id) }}">View event</a>
                       {% if b.cancellable %}
-                      <form method="post" action="{{ url_for('bookings.cancel_booking', booking_id=b.booking_id) }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="btn btn-outline-secondary btn-sm" type="submit">Cancel</button>
-                      </form>
+                        <a class="btn btn-outline-danger btn-sm" href="#cancel-{{ b.booking_id }}">Cancel</a>
                       {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
             </article>
+            {% if b.cancellable %}
+              <div id="cancel-{{ b.booking_id }}" class="modal-css" aria-labelledby="cancelTitle-{{ b.booking_id }}" aria-modal="true" role="dialog">
+                <div class="modal-css__dialog card shadow border-0">
+                  <div class="card-header d-flex align-items-center justify-content-between">
+                    <h2 id="cancelTitle-{{ b.booking_id }}" class="h5 mb-0">Cancel booking</h2>
+                    <a href="#" class="btn-close" aria-label="Close modal"></a>
+                  </div>
+
+                  <form method="post" action="{{ url_for('bookings.cancel_booking', booking_id=b.booking_id) }}">
+                    <div class="card-body">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                      <div class="d-flex align-items-start gap-3">
+                        <div class="cancel-icon rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0">
+                          <span aria-hidden="true" class="fw-bold">!</span>
+                          <span class="visually-hidden">Important</span>
+                        </div>
+
+                        <div>
+                          <p class="mb-2">
+                            You’re about to cancel booking <strong>{{ b.booking_id }}</strong> for
+                            <strong>{{ b.event_title }}</strong>.
+                          </p>
+                          <ul class="small text-muted mb-3">
+                            <li>No refunds will be issued.</li>
+                            <li>This exact booking cannot be reinstated.</li>
+                          </ul>
+
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ack-{{ b.booking_id }}" required>
+                            <label class="form-check-label" for="ack-{{ b.booking_id }}">
+                              I understand the cancellation policy.
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="card-footer d-grid gap-2 d-sm-flex justify-content-end">
+                      <a href="#" class="btn btn-outline-secondary">Keep booking</a>
+                      <button type="submit" class="btn btn-danger">Cancel booking</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            {% endif %}
+
           </div>
           {% endfor %}
         </div>

@@ -77,7 +77,7 @@ def event(event_id):
         is_host = (current_user.id == hostID)
         
     # sold quantity (sum of bookings)
-    sold_qty = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event_id).scalar() or 0
+    sold_qty = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter(Booking.event_id == event_id, Booking.status == "CONFIRMED").scalar() or 0
     remaining = None
     if capacity is not None:
         try:

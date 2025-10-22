@@ -27,12 +27,19 @@ def _status_for(event):
             return "Sold Out"
     return "Open"
 
+def _can_cancel_event(event) -> bool:
+    if getattr(event, "cancelled", False):
+        return False
+    start = getattr(event, "start_at", None)
+    now = datetime.now(start.tzinfo) if (start and start.tzinfo) else datetime.now()
+    return (start is None) or (start > now)
+
 @bookings_bp.route("/booking-history")
 @login_required
 def booking_history():
     rows = (
         db.session.query(Booking)
-        .filter(Booking.user_id == current_user.id)
+        .filter(Booking.user_id == current_user.id, Booking.status != "CANCELLED")
         .order_by(Booking.created_at.desc())
         .all()
     )
@@ -72,7 +79,7 @@ def booking_history():
             "booked_on_short": fmt(getattr(r, "created_at", None), '%d %b %Y • %I:%M %p'),
             "tickets": getattr(r, "qty", 1),
             "status": _status_for(e),
-            "cancellable": _status_for(e) == "Open",
+            "cancellable": (getattr(r, "status", "CONFIRMED") == "CONFIRMED") and _can_cancel_event(e),
         })
     return render_template("history.html", active_page="bookinghistory", bookings=bookings)
 
@@ -109,41 +116,43 @@ def checkStatus(event_id):
 @login_required
 def cancel_booking(booking_id):
     q = db.session.query(Booking).filter(Booking.user_id == current_user.id)
-    if hasattr(Booking, "public_id"):
+    if hasattr(Booking, "booking_id"):
+        q = q.filter(Booking.booking_id == booking_id)
+    elif hasattr(Booking, "public_id"):
         q = q.filter(Booking.public_id == booking_id)
     else:
         try:
             q = q.filter(Booking.id == int(booking_id))
         except Exception:
-            q = q.filter(Booking.id == -1)
+            flash("Invalid booking reference.", "warning")
+            return redirect(url_for("bookings.booking_history"))
+            
     booking = q.first()
     if not booking:
         flash("Booking not found.", "warning")
         return redirect(url_for("bookings.booking_history"))
 
     event = booking.event
-    if _status_for(event) != "Open":
+    if not _can_cancel_event(event):
         flash("Only upcoming bookings can be cancelled.", "warning")
         return redirect(url_for("bookings.booking_history"))
 
-    if hasattr(booking, "status"):
-        try:
-            booking.status = "Cancelled"
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            flash("Could not cancel booking.", "danger")
-            return redirect(url_for("bookings.booking_history"))
-    else:
-        try:
+    try:
+        if hasattr(booking, "status"):
+            booking.status = "CANCELLED"
+            if hasattr(booking, "cancelled_at"):
+                booking.cancelled_at = func.now()
+        else:
             db.session.delete(booking)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            flash("Could not cancel booking.", "danger")
-            return redirect(url_for("bookings.booking_history"))
 
-    flash("Your booking was cancelled.", "success")
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("Cancel failed:", repr(e))
+        flash("Could not cancel booking.", "danger")
+        return redirect(url_for("bookings.booking_history"))
+
+    flash("Your booking was cancelled. No refunds will be issued and this exact booking cannot be reinstated.", "success",)
     return redirect(url_for("bookings.booking_history"))
 
 @bookings_bp.post("/event/<int:event_id>/book")
@@ -175,7 +184,7 @@ def book_event(event_id):
         qty = 12
 
     # capacity check
-    sold = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter_by(event_id=event_id).scalar() or 0
+    sold = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter(Booking.event_id == event_id, Booking.status == "CONFIRMED").scalar() or 0
     remaining = (event.capacity or 0) - int(sold)
     if event.capacity is not None and qty > remaining:
         flash(f"Only {remaining} tickets remaining.", "warning")
