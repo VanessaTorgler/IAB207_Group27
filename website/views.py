@@ -22,7 +22,7 @@ def _has_started(start_at):
         now_local = datetime.now()
         return start_at <= now_local
     else:
-        now_utc_naive = datetime()
+        now_utc_naive = datetime.utcnow()
         start_utc_naive = start_at.astimezone(timezone.utc).replace(tzinfo=None)
         return start_utc_naive <= now_utc_naive
 
@@ -59,17 +59,28 @@ def index():
     )
     price_expr = func.coalesce(price_sq.c.min_price, 0.0)
 
+    sold_sq = (
+        db.session.query(
+            Booking.event_id.label("event_id"),
+            func.coalesce(func.sum(Booking.qty), 0).label("sold_qty"),
+        )
+        .filter(Booking.status == "CONFIRMED")
+        .group_by(Booking.event_id)
+        .subquery()
+    )
+
+    sold_qty_col = func.coalesce(sold_sq.c.sold_qty, 0).label("sold_qty")
+    
     # base query
     qry = (
         db.session.query(
             Event,
             price_expr.label("min_price"),
-            func.count(Booking.booking_id).label('popularity'),
+            sold_qty_col,
         )
         .outerjoin(price_sq, price_sq.c.event_id == Event.id)
-        .outerjoin(Booking, Booking.event_id == Event.id)
-        .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
-        .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
+        .outerjoin(sold_sq, sold_sq.c.event_id == Event.id)
+        .filter(Event.is_draft == False)
         .group_by(Event.id)
     )
     
@@ -96,7 +107,7 @@ def index():
     elif sort == 'priceHighLow':
         qry = qry.order_by(price_expr.desc())
     elif sort == 'popularity':
-        qry = qry.order_by(func.count(Booking.booking_id).desc(), Event.start_at.asc())
+        qry = qry.order_by(sold_qty_col.desc(), Event.start_at.asc())
     else:
         qry = qry.order_by(Event.start_at.asc().nulls_last())
 
@@ -113,8 +124,12 @@ def index():
         if getattr(e, 'cancelled', False):
             return 'Cancelled'
 
+
         # Check if Sold Out next
-        if e.capacity is not None and (sold_count or 0) >= e.capacity:
+        cap = e.capacity
+        if cap is not None and int(cap) <= 0:
+            return 'Sold Out'
+        if cap is not None and (sold_qty or 0) >= cap:
             return 'Sold Out'
 
         # Check if Inactive using has_started()
@@ -124,16 +139,17 @@ def index():
         # All other events that don't meet above criteria = Open
         return 'Open'
 
+
     enriched = []
-    for (e, mp, sold) in rows:
-        status = derive_status(e, sold)
-        if status == 'Draft':
+    for (e, mp, sold_qty) in rows:
+        s = derive_status(e, int(sold_qty or 0))
+        if s == 'Draft':
             continue
         enriched.append({
             "event": e,
             "min_price": float(mp or 0.0),
-            "sold_count": int(sold or 0),
-            "status": status
+            "sold_count": int(sold_qty or 0),
+            "status": s
         })
 
     if status_filter:
@@ -193,18 +209,40 @@ def search_events():
     price_max  = request.args.get('price_max', type=float)
     sort       = (request.args.get('sort') or 'relevance').strip()
 
-    qry = (db.session.query(
-                Event,
-                func.min(TicketType.price).label('min_price'),
-                func.count(Booking.booking_id).label('popularity')
-           )
-           .outerjoin(TicketType, TicketType.event_id == Event.id)
-           .outerjoin(Booking, Booking.event_id == Event.id)
-           .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
-           .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
-           .group_by(Event.id))
+    # define min price subquery/expr in THIS function
+    price_sq = (
+        db.session.query(
+            TicketType.event_id.label("event_id"),
+            func.min(cast(TicketType.price, Float)).label("min_price"),
+        )
+        .group_by(TicketType.event_id)
+        .subquery()
+    )
+    price_expr = func.coalesce(price_sq.c.min_price, 0.0)
+
+    sold_sq = (
+        db.session.query(
+            Booking.event_id.label("event_id"),
+            func.coalesce(func.sum(Booking.qty), 0).label("sold_qty"),
+        )
+        .filter(Booking.status == "CONFIRMED")
+        .group_by(Booking.event_id)
+        .subquery()
+    )
     
-    qry = qry.filter(Event.is_draft == False)
+    qry = (
+        db.session.query(
+            Event,
+            price_expr.label("min_price"),
+            func.coalesce(sold_sq.c.sold_qty, 0).label("sold_qty"),
+        )
+        .outerjoin(price_sq, price_sq.c.event_id == Event.id)
+        .outerjoin(Booking, Booking.event_id == Event.id)
+        .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
+        .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
+        .filter(Event.is_draft == False)
+        .group_by(Event.id, price_sq.c.min_price, sold_sq.c.sold_qty)
+    )
 
     if q_text:
         ilike = f"%{q_text}%"
@@ -225,7 +263,7 @@ def search_events():
     elif sort == 'priceHighLow':
         qry = qry.order_by(func.coalesce(func.min(TicketType.price), 0).desc())
     elif sort == 'popularity':
-        qry = qry.order_by(func.count(Booking.booking_id).desc(), Event.start_at.asc())
+        qry = qry.order_by(func.coalesce(sold_sq.c.sold_qty, 0).desc(), Event.start_at.asc())
     else:
         qry = qry.order_by(Event.start_at.asc().nulls_last())
 

@@ -24,40 +24,139 @@
         <img src="{{ image }}" class="img-fluid rounded" alt="{{ image_alt_text }}">
       </div>
       <div class="col-12 col-lg-5">
-        {% if status == 'Open' %}
-        <span class="badge rounded-pill badge-open mb-2">Open</span>
-        {% elif status == 'Cancelled' %}
-        <span class="badge rounded-pill badge-cancelled mb-2">Cancelled</span>
-        {% elif status == 'Inactive' %}
-        <span class="badge rounded-pill badge-inactive mb-2">Inactive</span>
-        {% elif status == 'Sold Out' %}
-        <span class="badge rounded-pill badge-soldout mb-2">Sold Out</span>
-        {% endif %}
-        <h1 class="h3 mb-2">{{ title }}</h1>
-        <p class="text-muted mb-3">Hosted by <strong>{{ host_name }}</strong></p>
+        {% set can_book = (status == 'Open') and (not is_host) %}
+        {% set remaining_safe = remaining if remaining is not none else 0 %}
+        {% set capacity_known = capacity is not none and capacity|int > 0 %}
+        {% set low_stock = (status == 'Open') and (remaining_safe > 0) and ((remaining_safe <= 20) or (capacity_known and remaining_safe <= (capacity * 0.1))) %}
+        {% set pct_left = capacity_known and remaining_safe >= 0 and ((remaining_safe * 100) // capacity) or None %}
 
-        <dl class="row small mb-3">
-          <dt class="col-4 col-sm-3">Date</dt>
-          <dd class="col-8 col-sm-9">{{ start_at_date }}</dd>
-          <dt class="col-4 col-sm-3">Time</dt>
-          <dd class="col-8 col-sm-9">{{start_at_time}}–{{end_at}} AEST</dd>
-          <dt class="col-4 col-sm-3">Format</dt>
-          <dd class="col-8 col-sm-9">{{ format_type }} • South Brisbane</dd>
-          <dt class="col-4 col-sm-3">Category</dt>
-          <dd class="col-8 col-sm-9">{{ category }}</dd>
-          <dt class="col-4 col-sm-3">Capacity</dt>
-          <dd class="col-8 col-sm-9">500 seats • 78 remaining</dd>
-          <dt class="col-4 col-sm-3">Price</dt>
-          <dd class="col-8 col-sm-9">{{ price }}</dd>
-        </dl>
+        <section class="event-panel card border-0 shadow-sm">
+          <div class="card-body">
 
-        <!-- Booking Path B: Modal confirmation -->
-        <div class="mt-2">
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmBookingModal"
-            aria-label="Open booking confirmation modal">
-            Book Now
-          </button>
-        </div>
+            <!-- Status + categories -->
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+              {% if status == 'Open' %}
+                <span class="badge rounded-pill badge-open">Open</span>
+              {% elif status == 'Cancelled' %}
+                <span class="badge rounded-pill badge-cancelled">Cancelled</span>
+              {% elif status == 'Inactive' %}
+                <span class="badge rounded-pill badge-inactive">Inactive</span>
+              {% elif status == 'Sold Out' %}
+                <span class="badge rounded-pill badge-soldout">Sold Out</span>
+              {% endif %}
+              <span class="badge rounded-pill bg-body-tertiary text-secondary-emphasis">{{ category }}</span>
+              <span class="badge rounded-pill bg-body-tertiary text-secondary-emphasis">{{ format_type }}</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="h4 mb-2">{{ title }}</h1>
+
+            <!-- Host -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+              {% set initials = (host_name.split()[0][0] ~ (host_name.split()|length > 1 and host_name.split()[-1][0] or '')).upper() %}
+              <span class="host-initials">{{ initials }}</span>
+              <span class="text-muted small">Hosted by <strong class="text-body">{{ host_name }}</strong></span>
+            </div>
+
+            <!-- Price + CTA -->
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+              <div class="d-flex align-items-end gap-2">
+                {% if price and price|float > 0 %}
+                  <span class="price-chip">${{ '%.2f'|format(price|float) }}</span>
+                {% else %}
+                  <span class="price-chip price-chip--free">FREE</span>
+                {% endif %}
+                {% if low_stock %}
+                  <span class="stock-pill">Only {{ remaining_safe }} left</span>
+                {% endif %}
+              </div>
+
+              {% if status == 'Open' and not is_host %}
+                {% if current_user.is_authenticated %}
+                  <a href="#bookModal" class="btn btn-primary">Book Now</a>
+                {% else %}
+                  <a class="btn btn-primary"
+                    href="{{ url_for('auth.login', next=url_for('events.event', event_id=event_id)) }}">
+                    Book Now
+                  </a>
+                {% endif %}
+              {% endif %}
+
+            </div>
+
+            <!-- Availability bar -->
+            {% if status == 'Open' and capacity_known %}
+              <div class="availability mb-3" aria-label="Availability">
+                <div class="availability__bar">
+                  <div class="availability__fill" style="width: {{ pct_left }}%"></div>
+                </div>
+                <div class="availability__meta small text-muted mt-1">
+                  {{ remaining_safe }} of {{ capacity }} spots remaining
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Details list -->
+            <dl class="event-specs">
+              <div class="event-specs__row">
+                <dt>
+                  <!-- calendar icon -->
+                  <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2M17 2v2M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>
+                  Date
+                </dt>
+                <dd>{{ start_at_date }}</dd>
+              </div>
+
+              <div class="event-specs__row">
+                <dt>
+                  <!-- clock icon -->
+                  <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/></svg>
+                  Time
+                </dt>
+                <dd>{{ start_at_time }}–{{ end_at }} AEST</dd>
+              </div>
+
+              <div class="event-specs__row">
+                <dt>
+                  <!-- pin icon -->
+                  <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-4.35 7-11A7 7 0 1 0 5 10c0 6.65 7 11 7 11zM12 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                  Location
+                </dt>
+                <dd>South Brisbane</dd>
+              </div>
+
+              <div class="event-specs__row">
+                <dt>
+                  <!-- tag icon -->
+                  <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12l-8 8-8-8 8-8 8 8zM4 12h16"/></svg>
+                  Category
+                </dt>
+                <dd>{{ category }}</dd>
+              </div>
+
+              {% if status == 'Open' and low_stock %}
+                <div class="event-specs__row">
+                  <dt>
+                    <!-- ticket icon -->
+                    <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9a2 2 0 1 0 0 6v2a2 2 0 0 0 2 2h14l2-2V9l-2-2H5a2 2 0 0 0-2 2v2z"/></svg>
+                    Availability
+                  </dt>
+                  <dd>{{ remaining_safe }} spots left</dd>
+                </div>
+              {% endif %}
+
+              <div class="event-specs__row">
+                <dt>
+                  <!-- dollar icon -->
+                  <svg class="spec-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1v22M17 5a4 4 0 0 0-4-2H9a3 3 0 0 0 0 6h6a3 3 0 1 1 0 6H7"/></svg>
+                  Price
+                </dt>
+                <dd>{% if price and price|float > 0 %}${{ '%.2f'|format(price|float) }}{% else %}FREE{% endif %}</dd>
+              </div>
+            </dl>
+
+          </div>
+        </section>
       </div>
     </div>
   </div>
@@ -66,28 +165,41 @@
 
 {% block content %}
 <!-- Booking Confirmation Modal -->
-<div class="modal fade" id="confirmBookingModal" tabindex="-1" aria-labelledby="confirmBookingLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="confirmBookingLabel">Confirm your booking</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
-      </div>
-      <div class="modal-body small">
+<div id="bookModal" class="modal-css" aria-labelledby="bookModalTitle" role="dialog" aria-modal="true">
+  <div class="modal-css__dialog card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 id="bookModalTitle" class="h5 mb-0">Complete purchase</h2>
+      <!-- Close -->
+      <a href="#" class="btn-close" aria-label="Close"></a>
+    </div>
+
+    <form method="post" action="{{ url_for('bookings.book_event', event_id=event_id) }}">
+      <div class="card-body small">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p class="mb-2">Event: <strong>{{ title }}</strong></p>
         <p class="mb-2">Date/Time: {{ start_at_date }} at {{ start_at_time }}</p>
-        <div class="mb-3">
-          <label for="modalTicketQty" class="form-label">Tickets</label>
-          <input id="modalTicketQty" type="number" min="1" max="12" value="1" class="form-control">
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label for="modalTicketQty" class="form-label">Tickets</label>
+            <input id="modalTicketQty" name="qty" type="number" min="1" max="12" value="1" class="form-control">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label">Remaining</label>
+            <input type="text" class="form-control" value="{{ remaining if remaining is not none else '—' }}" disabled>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <a href="{{ url_for('bookings.booking_history') }}" class="btn btn-primary">Confirm &amp; Go To Payment</a>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+
+      <div class="card-footer d-grid gap-2 d-sm-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Complete purchase</button>
+        <a href="#" class="btn btn-outline-secondary">Cancel</a>
       </div>
-    </div>
+    </form>
   </div>
 </div>
+
 
 <!-- Details & Comments -->
 <main id="main" class="container py-4">

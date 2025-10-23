@@ -71,10 +71,24 @@ def event(event_id):
         db.select(Event_Image.url).where(Event_Image.event_id==event_id)
     ).scalar_one_or_none()
     status = checkStatus(event_id)
+    
+    is_host = False
+    if hasattr(current_user, "is_authenticated") and current_user.is_authenticated:
+        is_host = (current_user.id == hostID)
+        
+    # sold quantity (sum of bookings)
+    sold_qty = db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter(Booking.event_id == event_id, Booking.status == "CONFIRMED").scalar() or 0
+    remaining = None
+    if capacity is not None:
+        try:
+            remaining = max(int(capacity) - int(sold_qty), 0)
+        except Exception:
+            remaining = None
+    
     return render_template('event.html', event_id=event_id, host_email=hostEmail,
     title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity,
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
-    image_alt_text=imageAltText)
+    image_alt_text=imageAltText, is_host=is_host, remaining=remaining, sold_qty=sold_qty,)
 
 @events_bp.route('/update/<int:event_id>', methods=['GET', 'POST'])
 @login_required
@@ -108,8 +122,6 @@ def update(event_id):
         form.category.data = tagfind
         form.ticket_price.data = ticket_type.price if ticket_type else 0
         form.format.data = event.event_type
-        
-        form.timezone.data = (event.event_timezone or "")
 
         # start_at -> date + time
         if event.start_at:
@@ -176,7 +188,6 @@ def update(event_id):
         event.title = form.title.data
         event.description =  form.description.data
         event.event_type = form.format.data
-        event.event_timezone = (form.timezone.data or event.event_timezone or "")
         event.start_at = start_dt
         event.rsvp_closes = rsvp_dt
         event.end_at = end_dt
@@ -221,9 +232,8 @@ def createUpdate():
         db_file_path = check_upload_file(form)
         print("Form Submitted!")
         print(
-            form.title.data, form.description.data, form.category.data, form.format.data,
-            form.date.data, form.start_time.data, form.end_time.data, form.timezone.data,
-            form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data,
+            form.title.data, form.description.data, form.category.data, form.format.data, form.date.data, form.start_time.data, 
+            form.end_time.data, form.location.data, form.capacity.data, form.event_image.data, form.image_alt_text.data,
             form.ticket_price.data, form.rsvp_closes.data, form.host_name.data, form.host_contact.data
         )
         
@@ -239,7 +249,6 @@ def createUpdate():
             title=form.title.data,
             description=form.description.data,
             event_type=form.format.data,
-            event_timezone=(form.timezone.data or ""),
             start_at=start_dt,
             rsvp_closes=rsvp_dt,
             end_at=end_dt,
@@ -331,7 +340,7 @@ def my_events():
         db.session.query(
             Event,
             func.min(cast(TicketType.price, Float)).label("min_price"),
-            func.count(Booking.booking_id).label("sold_count"),
+            func.coalesce(func.sum(Booking.qty), 0).label("sold_count"),
         )
         .outerjoin(TicketType, TicketType.event_id == Event.id)
         .outerjoin(Booking, Booking.event_id == Event.id)
@@ -368,6 +377,7 @@ def my_events():
     # metrics/status for all rows
     metrics = {}
     for e, mp, sold in rows:
+        sold = int(sold or 0)
         if getattr(e, "is_draft", False):
             status = "Draft"
         elif e.cancelled:
@@ -385,7 +395,7 @@ def my_events():
                 
         metrics[e.id] = {
             "min_price": float(mp or 0.0),
-            "sold": int(sold or 0),
+            "sold": sold,
             "status": status,
         }
 
