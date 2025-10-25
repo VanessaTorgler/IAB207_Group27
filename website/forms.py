@@ -55,8 +55,6 @@ class CreateEventForm(FlaskForm):
     #CSS Modal handles these
 
     #submit = SubmitField("Publish")
-    #draft = SubmitField("Save as Draft")
-    #schedule = SubmitField("Schedule")
     #reset = SubmitField("Reset")
     def validate_end_time(self, field):
         if self.start_time.data and field.data:
@@ -125,7 +123,7 @@ class ProfileForm(FlaskForm):
     submit = SubmitField('Save changes')
     
 class EventActionForm(FlaskForm):
-    action = HiddenField(validators=[DataRequired(), AnyOf(['draft', 'cancel', 'publish'])])
+    action = HiddenField(validators=[DataRequired(), AnyOf(['cancel', 'publish'])])
     
 class BookingForm(FlaskForm):
     qty = StringField('Quantity', validators=[InputRequired(), Length(min=1, max=3)])

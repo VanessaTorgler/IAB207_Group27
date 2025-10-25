@@ -155,29 +155,12 @@ def update(event_id):
             event_image.url = db_file_path
         else:
             form.event_image.data = db.session.execute(db.select(Event_Image.url).where(Event_Image.event_id==event.id)).scalar_one()
-        action = (request.form.get("action") or "").strip().lower()
-        if action == "draft":
-            event.is_draft = True
-            event.is_active = False
-            event.cancelled = False
-            msg = "Event saved as Draft."
-            cat = "info"
-        elif action == "publish":
-            event.is_draft = False
-            event.is_active = True
-            event.cancelled = False
-            msg = "Event published."
-            cat = "success"
-        elif action == "schedule":
-            event.is_draft = True
-            event.is_active = False
-            event.cancelled = False
-            msg = "Event scheduled (saved as Draft for now)."
-            cat = "info"
-        else:
-            msg = "Event updated."
-            cat = "success"
-
+        
+        event.cancelled = False
+        event.is_active = True
+        msg = "Event updated."
+        cat = "success"
+        
         start_dt = datetime.combine(form.date.data, form.start_time.data)
         end_dt   = datetime.combine(form.date.data, form.end_time.data)
 
@@ -256,14 +239,8 @@ def createUpdate():
             capacity=form.capacity.data
         )
 
-        if action == "draft":
-            event.is_draft = True
-            event.is_active = False
-            event.cancelled = False
-        elif action == "publish":
-            event.is_draft = False
-            event.is_active = True
-            event.cancelled = False
+        event.is_active = True
+        event.cancelled = False
         
         db.session.add(event)
         db.session.flush()
@@ -301,12 +278,7 @@ def createUpdate():
         db.session.add(ticket_type)
         db.session.commit()
         
-        if action == "draft":
-            flash("Event saved as Draft.", "info")
-        elif action == "publish":
-            flash("Event published.", "success")
-        else:
-            flash("Event scheduled (saved as Draft for now).", "info")
+        flash("Event published.", "success")
 
         print("Event created with ID:", event.id)
         print("EventImg created with ID:", event_img.id)
@@ -378,18 +350,17 @@ def my_events():
     metrics = {}
     for e, mp, sold in rows:
         sold = int(sold or 0)
-        if getattr(e, "is_draft", False):
-            status = "Draft"
-        elif e.cancelled:
+        if e.cancelled:
             status = "Cancelled"
         else:
+            # default Open until checks change it
             status = "Open"
 
             # Sold Out
             if e.capacity is not None and (sold or 0) >= e.capacity:
                 status = "Sold Out"
 
-            # Inactive only when start time has been reached
+            # Inactive when the start time has been reached
             if status == "Open" and _has_started(e.start_at):
                 status = "Inactive"
                 
@@ -483,21 +454,11 @@ def event_action(event_id):
     if action == "cancel":
         e.cancelled = True
         e.is_active = False
-        e.is_draft  = False
         flash("Event has been cancelled.", "warning")
-
-    elif action == "draft":
-        e.is_draft  = True
-        e.is_active = False
-        e.cancelled = False
-        flash("Event saved as draft.", "info")
-
     elif action == "publish":
-        e.is_active = True
-        e.is_draft  = False
         e.cancelled = False
+        e.is_active = True
         flash("Event published.", "success")
-
     else:
         flash("Unknown action.", "danger")
         return redirect(url_for("events.my_events", view=request.args.get("view", "table")))

@@ -105,7 +105,7 @@
               <fieldset>
                 <legend class="form-label mb-1">Status</legend>
                 <div class="check-stack list-scroll">
-                  {% for opt in ['Open', 'Sold Out', 'Cancelled', 'Inactive', 'Draft'] %}
+                  {% for opt in ['Open', 'Sold Out', 'Cancelled', 'Inactive'] %}
                     {% set normalized = opt.lower().replace(' ', '') %}
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="status-{{ normalized }}"
@@ -199,7 +199,6 @@
                           {% elif m.status == 'Cancelled' %}badge-cancelled
                           {% elif m.status == 'Inactive' %}badge-inactive
                           {% elif m.status == 'Sold Out' %}badge-soldout
-                          {% elif m.status == 'Draft' %}badge-draft
                           {% else %}text-bg-light{% endif %}">
                           {{ m.status }}
                         </span>
@@ -228,30 +227,23 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
-                            {% if m.status == 'Draft' %}
-                              <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
-                            {% else %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Edit Event</a></li>
-                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
-                            {% if m.status == 'Draft' %}
-                              <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
-                            {% endif %}
-                            
-                            {% if m.status != 'Draft' %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalDraft-{{ e.id }}">Make Draft</a></li>
+                            {% if m.status == 'Cancelled' %}
+                              <li>
+                                <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}" class="px-3 py-1 m-0">
+                                  {{ event_action_form.csrf_token() }}
+                                  <input type="hidden" name="action" value="publish">
+                                  <button type="submit" class="dropdown-item px-0">Publish Event</button>
+                                </form>
+                              </li>
+                            {% else %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
                             {% endif %}
 
-                            {% if m.status != 'Cancelled' %}
-                              {% if m.status == 'Draft' %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
-                              {% else %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Cancel Event</a></li>
-                              {% endif %}
-                            {% endif %}
                           </ul>
                         </div>
                       </td>
@@ -276,7 +268,6 @@
                         {% elif m.status == 'Cancelled' %}badge-cancelled
                         {% elif m.status == 'Inactive' %}badge-inactive
                         {% elif m.status == 'Sold Out' %}badge-soldout
-                        {% elif m.status == 'Draft' %}badge-draft
                         {% else %}text-bg-light{% endif %}">
                         {{ m.status }}
                       </span>
@@ -289,29 +280,21 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
-                            {% if m.status == 'Draft' %}
-                              <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
-                            {% else %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Edit Event</a></li>
-                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
                             <li><a class="dropdown-item" href="#">View Attendees</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
-                            {% if m.status == 'Draft' %}
-                              <li><a class="dropdown-item" href="#">Publish/Schedule Event</a></li>
-                            {% endif %}
-                            
-                            {% if m.status != 'Draft' %}
-                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalDraft-{{ e.id }}">Make Draft</a></li>
-                            {% endif %}
-
-                            {% if m.status != 'Cancelled' %}
-                              {% if m.status == 'Draft' %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
-                              {% else %}
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalMustDraft-{{ e.id }}">Cancel Event</a></li>
-                              {% endif %}
+                            {% if m.status == 'Cancelled' %}
+                              <li>
+                                <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}" class="px-3 py-1 m-0">
+                                  {{ event_action_form.csrf_token() }}
+                                  <input type="hidden" name="action" value="publish">
+                                  <button type="submit" class="dropdown-item px-0">Publish Event</button>
+                                </form>
+                              </li>
+                            {% else %}
+                              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCancel-{{ e.id }}">Cancel Event</a></li>
                             {% endif %}
                           </ul>
                         </div>
@@ -337,29 +320,6 @@
           {% endif %}
           <!-- Inactive/Cancel Modals -->
           {% for e in events %}
-            <div class="modal fade" id="modalDraft-{{ e.id }}" tabindex="-1" aria-labelledby="modalDraftLabel-{{ e.id }}" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
-                    {{ event_action_form.csrf_token() }}
-                    <input type="hidden" name="action" value="draft">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="modalDraftLabel-{{ e.id }}">Convert Event to Draft?</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <p class="mb-2"><strong>{{ e.title }}</strong></p>
-                      <p class="mb-0 small text-muted">This will hide the event from upcoming lists. You can still edit it later.</p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep as is</button>
-                      <button type="submit" class="btn btn-primary">Convert to Draft</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-
             <div class="modal fade" id="modalCancel-{{ e.id }}" tabindex="-1" aria-labelledby="modalCancelLabel-{{ e.id }}" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -379,33 +339,6 @@
                       <button type="submit" class="btn btn-danger">Cancel Event</button>
                     </div>
                   </form>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-          {# safeguard modal: must inactivate first #}
-          {% for e in events %}
-            <div class="modal fade" id="modalMustDraft-{{ e.id }}" tabindex="-1" aria-labelledby="modalMustDraftLabel-{{ e.id }}" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="modalMustInactiveLabel-{{ e.id }}">Convert to Draft first</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <p class="mb-2"><strong>{{ e.title }}</strong></p>
-                    <p class="mb-0 small text-muted">
-                      This action is only available when the event is a draft. Convert it to a draft first, then try again.
-                    </p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                    <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}" class="m-0">
-                      {{ event_action_form.csrf_token() }}
-                      <input type="hidden" name="action" value="draft">
-                      <button type="submit" class="btn btn-primary">Convert to Draft</button>
-                    </form>
-                  </div>
                 </div>
               </div>
             </div>

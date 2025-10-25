@@ -87,23 +87,23 @@ def checkStatus(event_id):
     e = db.session.get(Event, event_id)
     now_utc = datetime.now(timezone.utc)
 
-    if e.is_draft:
-        return "Draft"
-    if e.cancelled:
+    # Cancelled
+    if getattr(e, "cancelled", False):
         return "Cancelled"
-    if not e.is_active:
-        return "Inactive"
 
-    # Check if Sold Out first
-    sold = (db.session.query(func.coalesce(func.sum(Booking.qty), 0)).filter(Booking.event_id == event_id, Booking.status == "CONFIRMED").scalar() or 0)
-    
+    # Sold Out
+    sold = (
+        db.session.query(func.coalesce(func.sum(Booking.qty), 0))
+        .filter(Booking.event_id == event_id, Booking.status == "CONFIRMED")
+        .scalar()
+        or 0
+    )
     if e.capacity is not None and int(e.capacity or 0) <= 0:
         return "Sold Out"
     if e.capacity is not None and sold >= int(e.capacity):
         return "Sold Out"
 
-    # Inactive at/after start
-    start_at = e.start_at
+    start_at = getattr(e, "start_at", None)
     if start_at is not None:
         if start_at.tzinfo is None:
             start_at = start_at.replace(tzinfo=timezone.utc)
