@@ -66,7 +66,6 @@ class Event(TimestampMixin, db.Model):
     capacity = db.Column(db.Integer)
     cancelled = db.Column(db.Boolean, default=False, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False, server_default=text("1"))
-    is_draft = db.Column(db.Boolean, nullable=False, server_default=text("0"))
     # ... Create the Comments db.relationship
 	# relation to call destination.comments and comment.destination
     comments = db.relationship('Comment', back_populates='event', cascade='all, delete-orphan', passive_deletes=True)

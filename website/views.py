@@ -80,11 +80,8 @@ def index():
         )
         .outerjoin(price_sq, price_sq.c.event_id == Event.id)
         .outerjoin(sold_sq, sold_sq.c.event_id == Event.id)
-        .filter(Event.is_draft == False)
         .group_by(Event.id)
     )
-    
-    qry = qry.filter(Event.is_draft == False)
 
     # filters
     if q_text:
@@ -116,35 +113,24 @@ def index():
     now_utc = datetime.now(timezone.utc)
 
     def derive_status(e, sold_count):
-        # Check if Draft first
-        if getattr(e, 'is_draft', False):
-            return 'Draft'
-
-        # Check if Cancelled next
         if getattr(e, 'cancelled', False):
             return 'Cancelled'
 
-
-        # Check if Sold Out next
         cap = e.capacity
         if cap is not None and int(cap) <= 0:
             return 'Sold Out'
-        if cap is not None and (sold_qty or 0) >= cap:
+        if cap is not None and (sold_count or 0) >= cap:
             return 'Sold Out'
 
-        # Check if Inactive using has_started()
         if _has_started(e.start_at):
             return 'Inactive'
 
-        # All other events that don't meet above criteria = Open
         return 'Open'
 
 
     enriched = []
     for (e, mp, sold_qty) in rows:
         s = derive_status(e, int(sold_qty or 0))
-        if s == 'Draft':
-            continue
         enriched.append({
             "event": e,
             "min_price": float(mp or 0.0),
@@ -240,7 +226,6 @@ def search_events():
         .outerjoin(Booking, Booking.event_id == Event.id)
         .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
         .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
-        .filter(Event.is_draft == False)
         .group_by(Event.id, price_sq.c.min_price, sold_sq.c.sold_qty)
     )
 

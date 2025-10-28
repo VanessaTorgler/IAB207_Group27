@@ -41,14 +41,6 @@
   --bs-btn-hover-border-color:var(--brand-teal);
 }
 
-/* Schedule button */
-.schedule-modal-button,
-a.btn.btn-info[href="#scheduleModal"]{ background:var(--accent); border-color:var(--accent); color:#fff; }
-.schedule-modal-button:hover,
-.schedule-modal-button:focus,
-a.btn.btn-info[href="#scheduleModal"]:hover,
-a.btn.btn-info[href="#scheduleModal"]:focus{ background:var(--accent-700); border-color:var(--accent-700); color:#fff; }
-
 /* Pagination */
 .page-link{ --bs-pagination-active-bg:var(--brand-teal); }
 
@@ -76,7 +68,6 @@ img{ max-width:100%; height:auto; }
     repeating-linear-gradient(45deg,#e9ecef 0,#e9ecef 6px,#dde1e6 6px,#dde1e6 12px);
   color:#495057; border:1px solid #495057;
 }
-.badge-draft{ background:#e7e5ff; color:#3730a3; border:1px solid #3730a3; }
 
 /* Accessibility / focus */
 :focus-visible,
