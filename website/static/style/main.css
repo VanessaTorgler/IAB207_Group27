@@ -1,9 +1,14 @@
-/* Theme (Teal / Charcoal / Amber) */
+/* theme palette (teal/charcoal/amber) */
 :root{
   --brand-teal:#0b7285; --brand-teal-600:#085d6a; --brand-teal-700:#064e56; --brand-teal-disabled:#b3dfe5;
   --brand-charcoal:#23262a; --brand-bg:#f7f8fa; --brand-border:#e3e6ea;
   --accent:#b08900; --accent-700:#8c6d00;
   --surface:#fff; --muted:#6c757d;
+
+  /* utility tokens */
+  --brand:#0b7285;
+  --danger:#e03131;
+  --chip-bg:#eef6f8; --chip-text:#0b7285;
 
   /* Bootstrap base */
   --bs-primary:var(--brand-teal);
@@ -36,18 +41,6 @@
   --bs-btn-hover-border-color:var(--brand-teal);
 }
 
-/* Schedule button (CSS-only modal trigger) */
-.schedule-modal-button,
-a.btn.btn-info[href="#scheduleModal"]{
-  background:var(--accent); border-color:var(--accent); color:#fff;
-}
-.schedule-modal-button:hover,
-.schedule-modal-button:focus,
-a.btn.btn-info[href="#scheduleModal"]:hover,
-a.btn.btn-info[href="#scheduleModal"]:focus{
-  background:var(--accent-700); border-color:var(--accent-700); color:#fff;
-}
-
 /* Pagination */
 .page-link{ --bs-pagination-active-bg:var(--brand-teal); }
 
@@ -67,14 +60,21 @@ img{ max-width:100%; height:auto; }
 
 /* Status badges */
 .badge-status{ font-weight:600; }
-.badge-open{ background:#d0f1f5; color:#0b5864; }
-.badge-soldout{ background:#f8d7da; color:#842029; }
-.badge-cancelled{ background:#e9ecef; color:#495057; }
-.badge-inactive{ background:#fff3cd; color:#664d03; }
+.badge-open{ background:#d1e7dd; color:#0f5132; border:1px solid #0f5132; }
+.badge-inactive{ background:#fff3cd; color:#664d03; border:1px solid #664d03; }
+.badge-soldout{ background:#f8d7da; color:#842029; border:1px solid #842029; }
+.badge-cancelled{
+  background:
+    repeating-linear-gradient(45deg,#e9ecef 0,#e9ecef 6px,#dde1e6 6px,#dde1e6 12px);
+  color:#495057; border:1px solid #495057;
+}
 
 /* Accessibility / focus */
-:focus-visible{ outline:3px solid rgba(var(--bs-primary-rgb),.35); outline-offset:2px; }
-.nav-tabs .nav-link:focus-visible{ outline:3px solid rgba(var(--bs-primary-rgb),.35); outline-offset:2px; }
+:focus-visible,
+.nav-tabs .nav-link:focus-visible{
+  outline:3px solid rgba(var(--bs-primary-rgb),.35);
+  outline-offset:2px;
+}
 
 /* Tables */
 .table td,.table th{ vertical-align:middle; }
@@ -163,8 +163,78 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 /* Utilities */
 .sidebar-sticky{ position:sticky; top:1rem; }
 .table .truncate-col{ max-width:340px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.table .truncate-col a.text-reset{ text-decoration:none; }
+.table .truncate-col a.text-reset:hover{ text-decoration:underline; }
 
-/* My Events: compact grid card */
+/* modal cta emphasis */
+.modal .btn-danger{ font-weight:600; }
+
+/* compact filter zone */
+.filters-compact .form-label{ margin-bottom:.25rem; font-size:.9rem; }
+.filters-compact .btn{ font-size:.95rem; padding:.375rem .6rem; }
+
+/* required field asterisk */
+.form-label:has(+ input[required]),
+.form-label:has(+ select[required]),
+.form-label:has(+ textarea[required]){ position:relative; }
+.form-label:has(+ input[required])::after,
+.form-label:has(+ select[required])::after,
+.form-label:has(+ textarea[required])::after{
+  content:" *"; color:var(--bs-danger); margin-left:.25rem;
+}
+
+/* form width caps */
+@media (min-width:1200px){
+  .card .form-control{ max-width:520px; }
+  .col-xl-4 .form-control{ max-width:360px; }
+}
+
+/* host initials avatar */
+.host-initials{
+  width:34px; height:34px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#e9f2ff; color:#0b5ed7; font-weight:700; font-size:.9rem;
+}
+
+/* price chip */
+.price-chip{
+  display:inline-block; padding:.25rem .5rem; border-radius:999px;
+  background:var(--chip-bg); color:var(--chip-text);
+  font-weight:700; letter-spacing:.2px;
+}
+.price-chip--free{ background:#e9fbef; color:#1a7f37; }
+
+/* low-stock pill */
+.stock-pill{
+  display:inline-block; padding:.2rem .5rem; border-radius:.5rem;
+  background:#fff1f0; color:var(--danger); font-weight:600; font-size:.8rem;
+}
+
+/* availability bar */
+.availability__bar{ height:8px; background:#eef2f7; border-radius:999px; overflow:hidden; }
+.availability__fill{
+  height:100%; background:linear-gradient(90deg,var(--brand) 0%,#3bc9db 100%);
+  border-radius:999px; transition:width .4s ease-in-out;
+}
+
+/* specs list */
+.event-specs{ margin:0; padding:0; }
+.event-specs__row{
+  display:grid; grid-template-columns:120px 1fr; gap:.75rem;
+  padding:.5rem 0; border-top:1px dashed rgba(0,0,0,.06);
+}
+.event-specs__row:first-child{ border-top:none; }
+.event-specs dt{ margin:0; font-weight:600; color:#495057; display:flex; align-items:center; gap:.5rem; }
+.event-specs dd{ margin:0; color:#212529; }
+.spec-ico{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; }
+
+/* hover lift for event cards */
+.event-panel:hover{ box-shadow:0 .5rem 1rem rgba(0,0,0,.06); }
+
+/* compact button */
+.btn.btn-sm{ border-radius:10px; }
+
+/* “my events” compact grid card */
 .card--compact .card-img-top{ height:clamp(140px,10vw,170px); }
 .card--compact .card-body{ padding:.75rem 1rem; }
 .card--compact .badge{ font-size:.65rem; padding:.3rem .5rem; }
@@ -173,7 +243,7 @@ aside .card-body li strong{ display:inline-block; width:110px; }
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-clamp:2; overflow:hidden;
 }
 
-/* Filters panel */
+/* filters panel */
 @media (min-width:768px){ .filters-wide{ min-width:260px; } }
 .filters-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem 1rem; }
 .filters-grid .grid-full{ grid-column:1 / -1; }
@@ -181,46 +251,29 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 .filters-grid .check-stack .form-check{ margin-bottom:.25rem; }
 .filters-grid fieldset{ border:0; margin:0; padding:0; }
 .filters-grid legend{ font-size:.875rem; font-weight:600; line-height:1.25; margin-bottom:.25rem; padding:0; }
-/* smaller labels to avoid oversized “Status / Categories” */
 .filters-grid .form-label,
 .filters-grid .form-check-label{ font-size:.9rem; }
 
-/* icon-only button + compact dropdown */
+/* icon-only button + compact dropdowns */
 .btn-icon{ --bs-btn-padding-x:.35rem; --bs-btn-padding-y:.35rem; line-height:1; }
 .dropdown-menu-sm .dropdown-item{ padding:.35rem .75rem; font-size:.9rem; }
 .dropdown-toggle-no-caret::after{ display:none; }
 
-.overflow-y-visible{ overflow-y: visible; }
+/* overflow helper */
+.overflow-y-visible{ overflow-y:visible; }
 
-.table .truncate-col a.text-reset{text-decoration:none;}
-.table .truncate-col a.text-reset:hover{text-decoration:underline;}
-
-.modal .btn-danger { font-weight: 600; }
-
-
-/* Compact filter zone */
-.filters-compact .form-label { margin-bottom: .25rem; font-size: .9rem; }
-.filters-compact .btn       { font-size: .95rem; padding: .375rem .6rem; }
-
-
-/* Add a red asterisk to required fields */
-.form-label:has(+ input[required]),
-.form-label:has(+ select[required]),
-.form-label:has(+ textarea[required]) {
-  position: relative;
+/* cancel modal accent */
+.cancel-icon{
+  width:40px; height:40px;
+  background:rgba(220,53,69,.1);
+  color:#dc3545; font-weight:700;
 }
-
-.form-label:has(+ input[required])::after,
-.form-label:has(+ select[required])::after,
-.form-label:has(+ textarea[required])::after {
-  content: " *";
-  color: var(--bs-danger);
-  margin-left: .25rem;
+/* stronger danger button inside css modal */
+.modal-css__dialog .btn-danger{
+  box-shadow:0 0 0 0 rgba(220,53,69,.5);
+  transition:box-shadow .2s ease;
 }
-
-@media (min-width: 1200px) {
-  .card .form-control {
-    max-width: 520px;
-  }
-  .col-xl-4 .form-control { max-width: 360px; }
+.modal-css__dialog .btn-danger:focus,
+.modal-css__dialog .btn-danger:hover{
+  box-shadow:0 0 0 .2rem rgba(220,53,69,.25);
 }

@@ -261,9 +261,6 @@
           <div class="d-flex justify-content-between align-items-center mt-auto">
             <div class="d-flex gap-2">
               <a class="btn btn-primary" href="{{ url_for('events.event', event_id=e.id) }}">View details</a>
-              {% if r.status == 'Open' %}
-                <a class="btn btn-outline-primary" href="{{ url_for('events.event', event_id=e.id) }}">Book</a>
-              {% endif %}
             </div>
             <span class="fw-semibold text-primary">
               {% if r.min_price and r.min_price > 0 %}

@@ -1,9 +1,9 @@
-from flask import Blueprint, flash, render_template, request, url_for, redirect, current_app
+from flask import Blueprint, flash, render_template, request, url_for, redirect, current_app, abort
 from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from .models import User
 from werkzeug.utils import secure_filename
-from .forms import LoginForm, RegisterForm, ProfileForm
+from .forms import LoginForm, RegisterForm, ProfileForm, LogoutForm
 import os
 from uuid import uuid4
 from . import db
@@ -73,7 +73,11 @@ def register():
     return render_template('register.html', form=form)
 
 @auth_bp.route('/logout', methods=['POST'])
+@login_required
 def logout():
+    form = LogoutForm()
+    if not form.validate_on_submit():
+        abort(400)
     logout_user()
     flash('You have been logged out.', 'success')
     return redirect(url_for('auth.login'))

@@ -34,68 +34,59 @@
       <div id="nav" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('main.index') }}"
-              aria-current="page">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('main.index') }}" aria-current="page">
               <i class="bi bi-house-door-fill me-1"></i> Home
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'create-update' %}active{% endif %}"
-              href="{{ url_for('events.createUpdate') }}">
-              <i class="bi bi-plus-circle me-1"></i> Create Event
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'bookinghistory' %}active{% endif %}"
-              href="{{ url_for('bookings.booking_history') }}">
-              <i class="bi bi-clock-history me-1"></i> Booking History
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'my-events' %}active{% endif %}"
-              href="{{ url_for('events.my_events') }}">
-              <i class="bi bi-calendar-event me-1"></i> My Events
-            </a>
-          </li>
 
-          <!-- Divider (desktop only) -->
-          <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
+          {% if current_user.is_authenticated %}
+            <!-- Auth-only links -->
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'create-update' %}active{% endif %}" href="{{ url_for('events.createUpdate') }}">
+                <i class="bi bi-plus-circle me-1"></i> Create Event
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'bookinghistory' %}active{% endif %}" href="{{ url_for('bookings.booking_history') }}">
+                <i class="bi bi-clock-history me-1"></i> Booking History
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'my-events' %}active{% endif %}" href="{{ url_for('events.my_events') }}">
+                <i class="bi bi-calendar-event me-1"></i> My Events
+              </a>
+            </li>
 
-          <!-- User Dropdown -->
-          <li class="nav-item dropdown">
-            {% if current_user.is_authenticated %}
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="fw-semibold">
-                {{ current_user.username
-                or current_user.name
-                or current_user.email
-                | default('Account', true) }}
-              </span>
+            <!-- Divider (desktop only) -->
+            <li class="d-none d-lg-block mx-2 border-start" style="height: 24px;"></li>
 
-            </a>
-            {% else %}
-          <li><a class="nav-item nav-link" href="{{url_for('auth.register')}}">Register</a></li>
-          <li><a class="nav-item nav-link" href="{{url_for('auth.login')}}">Log In</a></li>
+            <!-- User dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="fw-semibold">
+                  {{ current_user.username or current_user.name or current_user.email | default('Account', true) }}
+                </span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person-circle me-2"></i> Profile</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-gear me-2"></i> Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{{ url_for('auth.logout') }}">
+                    {{ logout_form.hidden_tag() }}
+                    <button type="submit" class="dropdown-item text-danger">
+                      <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </li>
+          {% else %}
+            <!-- Log In and Register links -->
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a></li>
           {% endif %}
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person-circle me-2"></i>
-                Profile</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-gear me-2"></i>
-                Settings</a></li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <form method="post" action="{{ url_for('auth.logout') }}">
-                {% if csrf_token is defined %}{{ csrf_token() }}{% endif %}
-                <button type="submit" class="dropdown-item text-danger">
-                  <i class="bi bi-box-arrow-right me-2"></i> Logout
-                </button>
-              </form>
-            </li>
-          </ul>
-          </li>
+
         </ul>
       </div>
     </div>
