@@ -59,6 +59,7 @@ def event(event_id):
     hostID = db.session.execute(db.select(Event.host_user_id).where(Event.id==event_id)).scalar_one()
     hostName = db.session.execute(db.select(User.name).where(User.id==hostID)).scalar_one()
     hostEmail = db.session.execute(db.select(User.email).where(User.id==hostID)).scalar_one()
+    location = db.session.execute(db.select(Event.location_text).where(Event.id==event.id)).scalar_one()
     imageAltText = db.session.execute(db.select(Event_Image.alt_text).where(Event_Image.event_id==event_id)).scalar_one_or_none()
     formatType = db.session.execute(db.select(Event.event_type).where(Event.id==event_id)).scalar_one()
     startAt = db.session.execute(db.select(Event.start_at).where(Event.id==event_id)).scalar_one()
@@ -97,7 +98,7 @@ def event(event_id):
         except Exception:
             remaining = None
     
-    return render_template('event.html', event_id=event_id, host_email=hostEmail, comments=comments, form=form, event = event,
+    return render_template('event.html', event_id=event_id, host_email=hostEmail, comments=comments, form=form, location = location, event = event,
     title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity,
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
     image_alt_text=imageAltText, is_host=is_host, remaining=remaining, sold_qty=sold_qty,)
