@@ -102,20 +102,6 @@ def event(event_id):
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
     image_alt_text=imageAltText, is_host=is_host, remaining=remaining, sold_qty=sold_qty,)
 
-# @events_bp.route("/events/<int:event_id>/comment", methods=['GET', 'POST'])
-# @login_required
-# def comment(event_id):
-#     form = CommentForm()
-#     # get event associated with comment
-#     event = db.session.scalar(db.select(Event).where(Event.id == event_id))
-#     if form.validate_on_submit():
-#         post_comment = Comment(body=form.comment.data, event = event, user = current_user)
-#         db.session.add(post_comment)
-#         db.session.commit()
-#         # confirmation message
-#         flash("Comment Posted!")
-#         return redirect(url_for('events.event', event_id = event_id))
-
 
 @events_bp.route('/update/<int:event_id>', methods=['GET', 'POST'])
 @login_required
