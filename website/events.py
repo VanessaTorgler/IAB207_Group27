@@ -40,14 +40,18 @@ def event(event_id):
     session['event'] = event_id
     event = db.session.get(Event, event_id)
     form = CommentForm() 
-    if form.validate_on_submit():
+    if form.validate_on_submit() and current_user.is_authenticated:
         event = db.session.get(Event, event_id)
         post_comment = Comment(body=form.comment.data, event = event, user = current_user)
         db.session.add(post_comment)
         db.session.commit()
         # confirmation message
-        flash("Comment Posted!")
+        flash("Comment Posted!", "success")
         return redirect(url_for('events.event', event_id = event_id))
+    if not current_user.is_authenticated:
+        flash("Error, to post a comment you must be logged in!", "danger")
+    else:
+        flash("Error, something went wrong!", "danger")
     comments = db.session.execute(db.select(Comment).where(Comment.event_id==event_id)).scalars().all()
     title = db.session.execute(db.select(Event.title).where(Event.id==event_id)).scalar_one()
     description = db.session.execute(db.select(Event.description).where(Event.id==event_id)).scalar_one()
@@ -96,7 +100,7 @@ def event(event_id):
     return render_template('event.html', event_id=event_id, host_email=hostEmail, comments=comments, form=form, event = event,
     title=title, status=status, price=price, description=description, category=tagName, format_type = formatType, capacity=capacity,
     host_name=hostName, start_at_date=startAtDate, start_at_time=startAtTime, end_at=endAt, image=image, active_page='event',
-    image_alt_text=imageAltText)
+    image_alt_text=imageAltText, is_host=is_host, remaining=remaining, sold_qty=sold_qty,)
 
 # @events_bp.route("/events/<int:event_id>/comment", methods=['GET', 'POST'])
 # @login_required
