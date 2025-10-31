@@ -40,6 +40,7 @@ def event(event_id):
     session['event'] = event_id
     event = db.session.get(Event, event_id)
     form = CommentForm() 
+    # check current user is logged in before posting comment
     if form.validate_on_submit() and current_user.is_authenticated:
         event = db.session.get(Event, event_id)
         post_comment = Comment(body=form.comment.data, event = event, user = current_user)
@@ -48,8 +49,10 @@ def event(event_id):
         # confirmation message
         flash("Comment Posted!", "success")
         return redirect(url_for('events.event', event_id = event_id))
+    # not logged in
     if not current_user.is_authenticated:
         flash("Error, to post a comment you must be logged in!", "danger")
+    # other error
     else:
         flash("Error, something went wrong!", "danger")
     comments = db.session.execute(db.select(Comment).where(Comment.event_id==event_id)).scalars().all()
