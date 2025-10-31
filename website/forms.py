@@ -20,8 +20,8 @@ class CommentForm(FlaskForm):
     
  # this is the registration form
 class RegisterForm(FlaskForm):
-    user_name=StringField("User Name", validators=[InputRequired()])
-    email = StringField("Email Address", validators=[DataRequired(), Email("Please enter a valid email")])
+    user_name=StringField("User Name", validators=[InputRequired(), Length(min=3, max=120)])
+    email = StringField("Email Address", validators=[DataRequired(), Email("Please enter a valid email"), Length(min=3, max=254)])
     # linking two fields - password should be equal to data entered in confirm
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=36)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
@@ -40,7 +40,7 @@ class LogoutForm(FlaskForm):
 
 class CreateEventForm(FlaskForm):
     title=StringField("Title", validators=[InputRequired(), Length(min=3, max=160, message="Title must be between 3 and 160 characters long.")])
-    description=TextAreaField("Description", validators=[InputRequired(), Length(min=3, message="Description must be at least 3 characters long.")])
+    description=TextAreaField("Description", validators=[InputRequired(), Length(min=3, max=600, message="Description must be at least 3 characters long.")])
     category=SelectField("Category", choices=[('', 'Choose...'),('Tech & AI', 'Tech & AI'), ('Marketing', 'Marketing'), ('Finance', 'Finance'), ('Health', 'Health'), ('Education', 'Education')], validators=[DataRequired(message="Please select a category.")])
     format=SelectField("Format", choices=[('', 'Choose...'),('In-person', 'In-person'), ('Virtual', 'Virtual'), ('Hybrid', 'Hybrid')], validators=[DataRequired(message="Please select a format.")])
     date=DateField("Date", validators=[InputRequired()], format='%Y-%m-%d') 
@@ -52,8 +52,8 @@ class CreateEventForm(FlaskForm):
     image_alt_text=StringField("Image Alt Text", validators=[Length(max=255, message="Alt Text cannot exceed 255 characters.")])
     ticket_price=DecimalField("Ticket Price", places=2, rounding=None)
     rsvp_closes=DateTimeField("RSVP Closing Date", format='%Y-%m-%dT%H:%M', validators=[InputRequired()])
-    host_name=StringField("Host Name", validators=[InputRequired(), Length(min=3, max=120)])
-    host_contact=StringField("Host Contact Email", validators=[InputRequired(), Email("Please enter a valid email")])
+    #host_name=StringField("Host Name", validators=[InputRequired(), Length(min=3, max=120)])
+    #host_contact=StringField("Host Contact Email", validators=[InputRequired(), Email("Please enter a valid email")])
     #CSS Modal handles these
 
     #submit = SubmitField("Publish")
