@@ -52,9 +52,6 @@ def event(event_id):
     # not logged in
     if not current_user.is_authenticated:
         flash("Error, to post a comment you must be logged in!", "danger")
-    # other error
-    else:
-        flash("Error, something went wrong!", "danger")
     comments = db.session.execute(db.select(Comment).where(Comment.event_id==event_id)).scalars().all()
     title = db.session.execute(db.select(Event.title).where(Event.id==event_id)).scalar_one()
     description = db.session.execute(db.select(Event.description).where(Event.id==event_id)).scalar_one()
