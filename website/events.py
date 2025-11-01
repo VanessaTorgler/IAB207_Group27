@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_, cast, Float
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from .forms import CreateEventForm, CommentForm, check_upload_file
 from .models import Event, Event_Image, Event_Tag, Tag, Comment, TicketType, Booking, User
 from .bookings import checkStatus
@@ -419,6 +419,31 @@ def my_events():
 
     # tags map for displayed events only
     tags_map: dict[int, list[str]] = {e.id: tags_by_event_all.get(e.id, []) for e in events}
+    
+    # Bookings per event
+    event_ids = [e.id for e in events]
+    bookings_map: dict[int, list[dict]] = {eid: [] for eid in event_ids}
+
+    if event_ids:
+        rows_b = (
+            db.session.query(Booking, User)
+            .join(User, Booking.user_id == User.id)
+            .filter(Booking.event_id.in_(event_ids))
+            .order_by(Booking.created_at.desc())
+            .all()
+        )
+        for b, u in rows_b:
+            status_key = (b.status or "").upper()
+            status_label = status_key.replace("_", " ").title()
+
+            bookings_map[b.event_id].append({
+                "name": (u.name or getattr(u, "username", None) or u.email),
+                "email": u.email,
+                "qty": b.qty,
+                "status": status_key,
+                "status_label": status_label,
+                "booked_on": b.created_at,
+            })
 
     return render_template(
         "my-events.html",
@@ -436,6 +461,8 @@ def my_events():
         status_selected=status_selected,
         category_selected=category_selected,
         all_categories=all_categories,
+        bookings_map=bookings_map,
+        event_action_form=EventActionForm(),
     )
 
 @events_bp.post("/event/<int:event_id>/action")
@@ -464,4 +491,50 @@ def event_action(event_id):
         return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
 
     db.session.commit()
+    return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+@events_bp.post("/event/<int:event_id>/rsvp-close")
+@login_required
+def update_rsvp_close(event_id):
+    e = db.session.get(Event, event_id)
+    if not e or e.host_user_id != current_user.id:
+        flash("Event not found.", "danger")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    # parse datetime-local input
+    raw = (request.form.get("rsvp_closes") or "").strip()
+    if not raw:
+        flash("Please choose a date & time.", "warning")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    try:
+        # HTML datetime-local
+        new_dt = datetime.strptime(raw, "%Y-%m-%dT%H:%M")
+    except Exception:
+        flash("Invalid date/time.", "danger")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    # compute bounds
+    now_local = datetime.now()
+    if e.start_at:
+        start_local = e.start_at.replace(tzinfo=None)
+        latest_ok = start_local - timedelta(hours=12)
+    else:
+        # if start time is unknown, only enforce not-in-the-past
+        latest_ok = None
+
+    # validate: not in the past
+    if new_dt < now_local:
+        flash("RSVP close must be in the future.", "warning")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    # validate: not within 12 hours of event start
+    if latest_ok is not None and new_dt > latest_ok:
+        flash("RSVP close must be at least 12 hours before the event starts.", "warning")
+        return redirect(url_for("events.my_events", view=request.args.get("view", "table")))
+
+    # save
+    e.rsvp_closes = new_dt
+    db.session.commit()
+    flash("RSVP close time updated.", "success")
     return redirect(url_for("events.my_events", view=request.args.get("view", "table")))

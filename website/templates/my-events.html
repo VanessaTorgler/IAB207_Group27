@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% block title %}<title>Bondra – My Events</title>{% endblock %}
-{% block header %}
-  <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+{% block header_inner %}
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
     <div>
       <h1 class="h3 mb-1">My Events</h1>
       <p class="text-muted mb-0">Manage events you host.</p>
     </div>
-    <a href="{{ url_for("events.createUpdate") }}"
-       class="btn btn-primary d-none d-md-inline-flex">Create Event</a>
+    <a href="{{ url_for('events.createUpdate') }}" class="btn btn-primary d-none d-md-inline-flex">
+      Create Event
+    </a>
   </div>
 {% endblock %}
+
 {% block content %}
   <main id="main" class="container py-4 min-vh-75">
     <!-- Toolbar -->
@@ -74,13 +76,13 @@
               <input type="hidden" name="view" value="{{ view }}">
               <input type="hidden" name="sort" value="{{ sort_selected }}">
 
-              <!-- Search (full width) -->
+              <!-- Search -->
               <div class="grid-full">
                 <label for="q" class="form-label">Search</label>
                 <input id="q" name="q" class="form-control form-control-sm" placeholder="Title..." value="{{ q_text or '' }}">
               </div>
 
-              <!-- When (left) -->
+              <!-- When -->
               <div>
                 <label for="when" class="form-label">When</label>
                 <select id="when" name="when" class="form-select form-select-sm">
@@ -90,7 +92,7 @@
                 </select>
               </div>
 
-              <!-- Format (right) -->
+              <!-- Format -->
               <div>
                 <label for="format" class="form-label">Format</label>
                 <select id="format" name="format" class="form-select form-select-sm">
@@ -101,7 +103,7 @@
                 </select>
               </div>
 
-              <!-- Status (left) -->
+              <!-- Status -->
               <fieldset>
                 <legend class="form-label mb-1">Status</legend>
                 <div class="check-stack list-scroll">
@@ -117,7 +119,7 @@
                 </div>
               </fieldset>
 
-              <!-- Categories (right) -->
+              <!-- Categories  -->
               <fieldset>
                 <legend class="form-label mb-1">Categories</legend>
                 <div class="check-stack list-scroll">
@@ -133,7 +135,7 @@
                 </div>
               </fieldset>
 
-              <!-- Price range (full width) -->
+              <!-- Price range -->
               <div class="grid-full">
                 <label class="form-label">Price range (min/max)</label>
                 <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: .5rem;">
@@ -228,7 +230,7 @@
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
-                            <li><a class="dropdown-item" href="#">View Attendees</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalBookings-{{ e.id }}">View Bookings</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
@@ -258,9 +260,8 @@
               {% for e in events %}
                 {% set cover = e.images[0].url if e.images else url_for('static', filename='img/founders-breakfast.jpg') %}
                 <div class="col">
-                  <article class="card h-100 card--compact">
-                    <img src="{{ cover }}" class="card-img-top" alt="{{ e.title }} cover image">
-
+                  <article class="card h-100 card--compact">             
+                    <a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}"><img src="{{ cover }}" class="card-img-top" alt="{{ e.title }} cover image"></a>
                     <div class="d-flex justify-content-between align-items-start p-3 pt-3 pb-0">
                       {% set m = metrics.get(e.id) %}
                       <span class="badge rounded-pill
@@ -281,7 +282,8 @@
                           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
                             <li><a class="dropdown-item" href="{{ url_for('events.event', event_id=e.id) }}">View Event</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('events.update', event_id=e.id) }}">Edit Event</a></li>
-                            <li><a class="dropdown-item" href="#">View Attendees</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalRsvp-{{ e.id }}">Edit RSVP close</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalBookings-{{ e.id }}">View Bookings</a></li>
                             <li><a class="dropdown-item" href="#">View Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
 
@@ -319,26 +321,203 @@
             </div>
           {% endif %}
           <!-- Inactive/Cancel Modals -->
-          {% for e in events %}
-            <div class="modal fade" id="modalCancel-{{ e.id }}" tabindex="-1" aria-labelledby="modalCancelLabel-{{ e.id }}" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                  <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
-                    {{ event_action_form.csrf_token() }}
-                    <input type="hidden" name="action" value="cancel">
+          {% if events and events|length > 0 %}
+            {% for e in events %}
+              <!-- Cancel Event modal -->
+              <div class="modal fade" id="modalCancel-{{ e.id }}" tabindex="-1" aria-labelledby="modalCancelLabel-{{ e.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <form method="post" action="{{ url_for('events.event_action', event_id=e.id, view=view) }}">
+                      {{ event_action_form.csrf_token() }}
+                      <input type="hidden" name="action" value="cancel">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="modalCancelLabel-{{ e.id }}">Cancel this event?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p class="mb-2"><strong>{{ e.title }}</strong></p>
+                        <p class="mb-0 small text-muted">Attendees won’t be able to book.</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Never mind</button>
+                        <button type="submit" class="btn btn-danger">Cancel Event</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit RSVP Close modal -->
+              <div class="modal fade"
+                  id="modalRsvp-{{ e.id }}"
+                  tabindex="-1"
+                  aria-labelledby="modalRsvpLabel-{{ e.id }}"
+                  aria-hidden="true"
+                  data-start-at="{{ e.start_at and e.start_at.strftime('%Y-%m-%dT%H:%M') or '' }}">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form method="post" action="{{ url_for('events.update_rsvp_close', event_id=e.id, view=view) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="modalRsvpLabel-{{ e.id }}">Edit RSVP close</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        {% set current_close = e.rsvp_closes and e.rsvp_closes.strftime('%Y-%m-%dT%H:%M') or '' %}
+                        <label for="rsvp-{{ e.id }}" class="form-label">RSVP closes</label>
+                        <input
+                          id="rsvp-{{ e.id }}"
+                          name="rsvp_closes"
+                          type="datetime-local"
+                          class="form-control"
+                          value="{{ current_close }}">
+                        <div class="form-text">
+                          Must be in the future and at least <strong>12 hours</strong> before start.
+                        </div>
+                        <div class="small text-muted mt-2">
+                          {% if e.start_at %}Event starts: {{ e.start_at.strftime('%a, %d %b %Y • %I:%M %p') }}{% else %}No start time set{% endif %}
+                        </div>
+                        <div class="alert alert-warning d-none mt-2" role="alert"></div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- View Bookings modal -->
+              {% set bookings = bookings_map.get(e.id, []) %}
+              <div class="modal fade" id="modalBookings-{{ e.id }}" tabindex="-1" aria-labelledby="modalBookingsLabel-{{ e.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                  <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="modalCancelLabel-{{ e.id }}">Cancel this event?</h5>
+                      <h5 class="modal-title" id="modalBookingsLabel-{{ e.id }}">
+                        Bookings — {{ e.title }}
+                        {% if bookings %}<span class="text-muted fw-normal">({{ bookings|length }})</span>{% endif %}
+                      </h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+
                     <div class="modal-body">
-                      <p class="mb-2"><strong>{{ e.title }}</strong></p>
-                      <p class="mb-0 small text-muted">Attendees won’t be able to book.</p>
+                      {% if bookings and bookings|length > 0 %}
+                        <div class="table-responsive">
+                          <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                              <tr>
+                                <th style="width:36px;">#</th>
+                                <th>Attendee</th>
+                                <th>Email</th>
+                                <th class="text-center" style="width:80px;">Qty</th>
+                                <th class="text-nowrap" style="width:110px;">Status</th>
+                                <th class="text-nowrap" style="width:170px;">Booked On</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for b in bookings %}
+                                {% set badge_class = 'text-bg-light' %}
+                                {% if b.status == 'CONFIRMED' %}
+                                  {% set badge_class = 'bg-success-subtle text-success-emphasis' %}
+                                {% elif b.status == 'CANCELLED' %}
+                                  {% set badge_class = 'bg-secondary-subtle text-secondary-emphasis' %}
+                                {% endif %}
+                                <tr>
+                                  <td class="text-muted small">{{ loop.index }}</td>
+                                  <td class="fw-semibold">{{ b.name }}</td>
+                                  <td class="small">{{ b.email }}</td>
+                                  <td class="text-center">{{ b.qty }}</td>
+                                  <td><span class="badge rounded-pill {{ badge_class }}">{{ b.status_label }}</span></td>
+                                  <td class="text-muted small">
+                                    {% if b.booked_on %}{{ b.booked_on.strftime('%d/%m/%y %I:%M %p') }}{% else %}—{% endif %}
+                                  </td>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                          </table>
+                        </div>
+                      {% else %}
+                        <div class="text-center text-muted py-4">
+                          <i class="bi bi-people" style="font-size:2rem;"></i>
+                          <p class="mt-2 mb-0">No bookings yet for this event.</p>
+                        </div>
+                      {% endif %}
                     </div>
+
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Never mind</button>
-                      <button type="submit" class="btn btn-danger">Cancel Event</button>
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
-                  </form>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+          <!-- Bookings modals -->
+          {% for e in events %}
+            {% set bookings = bookings_map.get(e.id, []) %}
+            <div class="modal fade" id="modalBookings-{{ e.id }}" tabindex="-1" aria-labelledby="modalBookingsLabel-{{ e.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalBookingsLabel-{{ e.id }}">
+                      Bookings — {{ e.title }}
+                      {% if bookings %}<span class="text-muted fw-normal">({{ bookings|length }})</span>{% endif %}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    {% if bookings and bookings|length > 0 %}
+                      <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                          <thead class="table-light">
+                            <tr>
+                              <th style="width: 36px;">#</th>
+                              <th>Attendee</th>
+                              <th>Email</th>
+                              <th class="text-center" style="width: 80px;">Qty</th>
+                              <th class="text-nowrap" style="width: 110px;">Status</th>
+                              <th class="text-nowrap" style="width: 170px;">Booked On</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for b in bookings %}
+                              <tr>
+                                <td class="text-muted small">{{ loop.index }}</td>
+                                <td class="fw-semibold">{{ b.name }}</td>
+                                <td class="small">{{ b.email }}</td>
+                                <td class="text-center">{{ b.qty }}</td>
+                                {% set badge = {
+                                  'CONFIRMED': 'bg-success-subtle text-success-emphasis',
+                                  'CANCELLED': 'bg-secondary-subtle text-secondary-emphasis'
+                                }.get(b.status_key, 'text-bg-light') %}
+                                <td>
+                                  <span class="badge rounded-pill {{ badge }}">{{ b.status_label }}</span>
+                                </td>
+                                <td class="text-muted small">
+                                  {% if b.booked_on %}
+                                    {{ b.booked_on.strftime('%d/%m/%y %I:%M %p') }}
+                                  {% else %}
+                                    —
+                                  {% endif %}
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    {% else %}
+                      <div class="text-center text-muted py-4">
+                        <i class="bi bi-people" style="font-size:2rem;"></i>
+                        <p class="mt-2 mb-0">No bookings yet for this event.</p>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
                 </div>
               </div>
             </div>
