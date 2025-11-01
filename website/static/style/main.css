@@ -283,3 +283,58 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 .modal-css__dialog .btn-danger:hover{
   box-shadow:0 0 0 .2rem rgba(220,53,69,.25);
 }
+
+/* anim angle */
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  @property --spin { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+}
+
+/* palette */
+.page-my-events { --rainbow:#ff004c,#ff7a00,#ffef00,#40ff00,#00ffd5,#007bff,#8a2be2,#ff004c; }
+
+/* pill */
+.page-my-events .badge-soldout{
+  --spin:0deg;
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.38rem .9rem .38rem 2.1rem;
+  border-radius:999px;
+  border:2px solid transparent;
+  background:
+    linear-gradient(#00000070,#00000070) padding-box,
+    conic-gradient(from var(--spin), var(--rainbow)) border-box;
+  color:#ffffff;
+  font-weight:700;
+  letter-spacing:.1px;
+  box-shadow:0 1px 0 rgba(0,0,0,.06);
+  animation:soldout-spin 6s linear infinite;
+}
+
+/* confetti */
+.page-my-events .badge-soldout::after{
+  content:"🎉";
+  position:absolute;
+  left:.6rem; top:50%;
+  transform:translateY(-50%) rotate(-8deg);
+  font-size:.95rem; line-height:1;
+}
+
+/* dark */
+.dark .page-my-events .badge-soldout{
+  background:
+    linear-gradient(#0f1115,#0f1115) padding-box,
+    conic-gradient(from var(--spin), var(--rainbow)) border-box;
+  color:#eee;
+  -webkit-text-stroke:.35px #000;
+  box-shadow:0 1px 0 rgba(255,255,255,.06);
+}
+
+/* keyframes */
+@keyframes soldout-spin { to { --spin:360deg; } }
+
+/* reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .page-my-events .badge-soldout{ animation:none; }
+}
