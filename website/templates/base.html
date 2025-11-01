@@ -13,7 +13,7 @@
 </head>
 
 
-<body>
+<body class="d-flex flex-column min-vh-100">
 
   <a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 px-3 py-2 bg-light border rounded"
     href="#main">Skip to content</a>
@@ -100,21 +100,16 @@
   {% endfor %}
   {% endwith %}
   <!-- Header -->
-  <header class="py-4 border-bottom">
-    {% block breadcrumbs %}
-
-    {% endblock %}
-
-    {% block header %}
-
-    {% endblock %}
-
-  </header>
-
-  {% block content %}
-
+  {% block header %}
+  <section class="border-bottom bg-body-tertiary">
+    <div class="container py-4">
+      {% block header_inner %}
+        {% block breadcrumbs %}{% endblock %}
+      {% endblock %}
+    </div>
+  </section>
   {% endblock %}
-
+  {% block content %}{% endblock %}
   <footer class="bg-light border-top py-5 mt-5">
     <div class="container">
       <div class="row">
