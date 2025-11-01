@@ -3,7 +3,7 @@ from flask_bcrypt import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from .models import User
 from werkzeug.utils import secure_filename
-from .forms import LoginForm, RegisterForm, ProfileForm, LogoutForm
+from .forms import LoginForm, RegisterForm, ProfileForm, LogoutForm, ForgotPasswordForm
 import os
 from uuid import uuid4
 from . import db
@@ -174,3 +174,14 @@ def profile():
         return redirect(url_for('auth.profile'))
 
     return render_template('profile.html', form=form, user=current_user)
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        return redirect(url_for('auth.forgot_password_sent'))
+    return render_template('forgot_password.html', form=form)
+
+@auth_bp.route('/forgot-password/sent')
+def forgot_password_sent():
+    return render_template('forgot_password_sent.html')

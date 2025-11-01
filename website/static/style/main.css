@@ -160,6 +160,12 @@ aside .card-body li strong{ display:inline-block; width:110px; }
 /* Empty state */
 .empty-state{ min-height:40vh; }
 
+#events-grid .empty-state {
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Utilities */
 .sidebar-sticky{ position:sticky; top:1rem; }
 .table .truncate-col{ max-width:340px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

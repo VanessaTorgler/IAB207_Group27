@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, I
 from werkzeug.utils import secure_filename
 from flask_wtf.file import FileAllowed
 from wtforms import HiddenField
-import os, time, uuid
+import os, time, uuid, re
 
 # creates the login information
 class LoginForm(FlaskForm):
@@ -127,3 +127,19 @@ class EventActionForm(FlaskForm):
     
 class BookingForm(FlaskForm):
     qty = StringField('Quantity', validators=[InputRequired(), Length(min=1, max=3)])
+
+class ForgotPasswordForm(FlaskForm):
+    identifier = StringField(
+        "Email address or mobile number",
+        validators=[InputRequired(message="Please enter your email or mobile number."),
+                    Length(max=255)]
+    )
+    submit = SubmitField("Send reset instructions")
+
+    def validate_identifier(self, field):
+        s = (field.data or "").strip()
+        # Accept either a reasonable email OR a reasonable phone format.
+        email_like = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$").match(s)
+        phone_like = re.compile(r"^\+?\d[\d\s().-]{6,}$").match(s)
+        if not (email_like or phone_like):
+            raise ValidationError("Enter a valid email address or mobile number.")

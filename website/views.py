@@ -80,6 +80,8 @@ def index():
         )
         .outerjoin(price_sq, price_sq.c.event_id == Event.id)
         .outerjoin(sold_sq, sold_sq.c.event_id == Event.id)
+        .outerjoin(Event_Tag, Event_Tag.event_id == Event.id)
+        .outerjoin(Tag, Tag.id == Event_Tag.tag_id)
         .group_by(Event.id)
     )
 
