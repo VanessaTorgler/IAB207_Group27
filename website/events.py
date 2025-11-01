@@ -419,6 +419,36 @@ def my_events():
 
     # tags map for displayed events only
     tags_map: dict[int, list[str]] = {e.id: tags_by_event_all.get(e.id, []) for e in events}
+    
+    # Bookings per event
+    event_ids = [e.id for e in events]
+    bookings_map: dict[int, list[dict]] = {eid: [] for eid in event_ids}
+
+    if event_ids:
+        rows_b = (
+            db.session.query(Booking, User)
+            .outerjoin(User, Booking.user_id == User.id)
+            .filter(Booking.event_id.in_(event_ids))
+            .order_by(Booking.created_at.desc())
+            .all()
+        )
+        for b, u in rows_b:
+            raw = getattr(b, "status", "CONFIRMED")
+            if hasattr(raw, "value"):
+                raw = raw.value
+            raw_str = str(raw)
+            key = raw_str.split(".")[-1].upper()
+            label = key.replace("_", " ").title()
+
+            bookings_map[b.event_id].append({
+                "id": getattr(b, "booking_id", getattr(b, "public_id", None)),
+                "name": (getattr(u, "name", None) or getattr(u, "username", None) or getattr(u, "email", None) or "Guest"),
+                "email": getattr(u, "email", "") if u else "",
+                "qty": getattr(b, "qty", 0),
+                "status_key": key,
+                "status_label": label,
+                "booked_on": getattr(b, "created_at", None),
+            })
 
     return render_template(
         "my-events.html",
@@ -436,6 +466,7 @@ def my_events():
         status_selected=status_selected,
         category_selected=category_selected,
         all_categories=all_categories,
+        bookings_map=bookings_map,
     )
 
 @events_bp.post("/event/<int:event_id>/action")
